@@ -131,24 +131,8 @@ app.get('*', (req, res) => {
 });
 
 // ── START ───────────────────────────────────────────────────
-app.listen(PORT, () => {
-  console.log('');
-  console.log('╔═══════════════════════════════════════════╗');
-  console.log('║      PSA Analytics Portal — v2.0          ║');
-  console.log('╠═══════════════════════════════════════════╣');
-  console.log(`║  Server   : http://localhost:${PORT}           ║`);
-  console.log('║  Username : admin                          ║');
-  console.log('║  Password : sanathan2026                   ║');
-  console.log('╚═══════════════════════════════════════════╝');
-  console.log('');
+const PORT = process.env.PORT || 3000;
 
-  // Ensure DB is initialised on startup
-  try {
-    getDB();
-    console.log('✓ Database connected —', require('path').join(__dirname, 'db', 'psa.db'));
-  } catch (e) {
-    console.error('✗ Database error:', e.message);
-  }
+app.listen(PORT, '0.0.0.0', () => {
+  console.log(`PSA Analytics Portal running on port ${PORT}`);
 });
-
-module.exports = app;

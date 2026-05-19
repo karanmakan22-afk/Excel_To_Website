@@ -11,6 +11,10 @@ const { getDB }  = require('./database');
 const app  = express();
 const PORT = process.env.PORT || 3000;
 
+app.listen(PORT, () => {
+  console.log(`Server running on port ${PORT}`);
+});
+
 // ── USERS (Basic Auth) ──────────────────────────────────────
 // To change: update username/password pairs here
 const USERS = {

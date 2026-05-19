@@ -58,9 +58,9 @@ const migrate = db.transaction(() => {
       VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?)
     `);
     [
-      ['sanathan','PLT-01','SRI33PL Fatehgarh','Solar','Fatehgarh','Rajasthan', 21,15,3.10,'30 Jun 2026',176.6,32.28,'Pre-COD','Critical'],
-      ['sanathan','PLT-02','SRI33PL Bikaner',  'Solar','Bikaner',  'Rajasthan', 30,21,3.10,'31 Dec 2026', 46.12,46.12,'Pre-COD','Pre-COD'],
-      ['sanathan','PLT-03','SRI33PL Gadag',    'Wind', 'Gadag',    'Karnataka', 45,45,3.81,'30 Jun 2027', 98.2, 98.2, 'Pre-COD','Pre-COD']
+      ['SERENTICA','PLT-01','SRI99PL Kolhapur','Solar','Kolhapur','Rajasthan', 21,15,3.10,'30 Dec 2026',176.6,32.28,'Pre-COD','Critical'],
+      ['SERENTICA','PLT-02','SRI99PL Jodhpur',  'Solar','Jodhpur',  'Rajasthan', 30,21,3.10,'31 Nov 2026', 46.12,46.12,'Pre-COD','Pre-COD'],
+      ['SERENTICA','PLT-03','SRI33PL Gadag',    'Wind', 'Gadag',    'Karnataka', 45,45,3.81,'30 Aug 2027', 98.2, 98.2, 'Pre-COD','Pre-COD']
     ].forEach(r => ins.run(...r));
   });
 

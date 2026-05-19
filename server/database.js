@@ -8,9 +8,7 @@ const path = require('path');
 const fs   = require('fs');
 
 // Use /data on Render (persistent disk) or local server/db folder
-const DB_DIR  = process.env.NODE_ENV === 'production'
-  ? '/data'
-  : path.join(__dirname, 'db');
+const DB_DIR = path.join(__dirname, 'db');
 
 const DB_PATH = path.join(DB_DIR, 'psa.db');
 

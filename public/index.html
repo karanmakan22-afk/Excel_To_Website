@@ -1,0 +1,2123 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>PSA Analytics Portal — Sanathan</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600;700&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
+<style>
+:root{
+  --brand:#48a1c7;--brand-dim:#2d7fa6;--brand-glow:rgba(72,161,199,0.15);--brand-glow2:rgba(72,161,199,0.08);
+  --bg-base:#0d1117;--bg-surface:#161b22;--bg-elevated:#1c2330;--bg-card:#1c2330;--bg-hover:#232b38;--bg-input:#161b22;
+  --border:rgba(255,255,255,0.07);--border-md:rgba(255,255,255,0.12);--border-strong:rgba(255,255,255,0.2);
+  --text-primary:#e6edf3;--text-secondary:#8b949e;--text-muted:#484f58;
+  --green:#3fb950;--green-bg:rgba(63,185,80,0.1);--amber:#d29922;--amber-bg:rgba(210,153,34,0.1);
+  --red:#f85149;--red-bg:rgba(248,81,73,0.1);--blue:#58a6ff;--blue-bg:rgba(88,166,255,0.1);
+  --purple:#bc8cff;--purple-bg:rgba(188,140,255,0.1);
+  --radius-sm:6px;--radius-md:10px;--radius-lg:14px;--radius-xl:20px;
+  --font:'DM Sans',sans-serif;--mono:'DM Mono',monospace;
+  --sidebar-w:240px;--topbar-h:56px;
+  --shadow-card:0 1px 3px rgba(0,0,0,0.4),0 0 0 1px rgba(255,255,255,0.05);
+  --shadow-el:0 8px 32px rgba(0,0,0,0.5);
+}
+[data-theme="light"]{
+  --bg-base:#f0f4f8;--bg-surface:#fff;--bg-elevated:#fff;--bg-card:#fff;--bg-hover:#f4f7fb;--bg-input:#f0f4f8;
+  --border:rgba(0,0,0,0.07);--border-md:rgba(0,0,0,0.12);--border-strong:rgba(0,0,0,0.2);
+  --text-primary:#1a2332;--text-secondary:#5a6a7a;--text-muted:#aab4be;
+  --green:#1a7f37;--green-bg:rgba(26,127,55,0.08);--amber:#9a6700;--amber-bg:rgba(154,103,0,0.08);
+  --red:#cf222e;--red-bg:rgba(207,34,46,0.08);--blue:#0969da;--blue-bg:rgba(9,105,218,0.08);
+  --purple:#6639ba;--purple-bg:rgba(102,57,186,0.08);
+  --shadow-card:0 1px 4px rgba(0,0,0,0.08);--shadow-el:0 8px 32px rgba(0,0,0,0.12);
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+html{font-size:14px;}
+body{font-family:var(--font);background:var(--bg-base);color:var(--text-primary);line-height:1.5;overflow:hidden;height:100vh;}
+.app{display:flex;height:100vh;overflow:hidden;}
+/* SIDEBAR */
+.sidebar{width:var(--sidebar-w);min-width:var(--sidebar-w);background:var(--bg-surface);border-right:1px solid var(--border);display:flex;flex-direction:column;transition:width 0.25s;z-index:100;}
+.sidebar.collapsed{width:56px;}
+.sidebar.collapsed .nav-label,.sidebar.collapsed .nav-badge,.sidebar.collapsed .logo-texts,.sidebar.collapsed .view-toggle,.sidebar.collapsed .nav-section-label,.sidebar.collapsed .sf-text{display:none;}
+.sidebar.collapsed .nav-item{justify-content:center;padding:10px;}
+.sidebar-logo{padding:16px 14px 12px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:10px;}
+.logo-icon{width:32px;height:32px;background:linear-gradient(135deg,var(--brand),var(--brand-dim));border-radius:var(--radius-sm);display:flex;align-items:center;justify-content:center;font-size:16px;flex-shrink:0;}
+.logo-texts{flex:1;min-width:0;}
+.logo-name{font-size:13px;font-weight:600;white-space:nowrap;}
+.logo-sub{font-size:11px;color:var(--text-secondary);white-space:nowrap;}
+.view-toggle{margin:10px 12px;background:var(--bg-elevated);border-radius:var(--radius-sm);padding:3px;display:flex;border:1px solid var(--border);}
+.view-btn{flex:1;padding:5px 0;font-size:11px;font-weight:500;border:none;background:transparent;color:var(--text-secondary);cursor:pointer;border-radius:4px;transition:all 0.15s;font-family:var(--font);}
+.view-btn.active{background:var(--brand);color:#fff;}
+.sidebar-nav{flex:1;overflow-y:auto;padding:4px 0;}
+.nav-section-label{font-size:10px;font-weight:600;letter-spacing:.08em;color:var(--text-muted);padding:10px 16px 4px;text-transform:uppercase;}
+.nav-item{display:flex;align-items:center;gap:9px;padding:8px 14px;margin:1px 6px;border-radius:var(--radius-sm);cursor:pointer;font-size:13px;color:var(--text-secondary);transition:all 0.15s;border:1px solid transparent;}
+.nav-item:hover{background:var(--bg-hover);color:var(--text-primary);}
+.nav-item.active{background:var(--brand-glow);color:var(--brand);border-color:rgba(72,161,199,0.2);font-weight:500;}
+.nav-icon{width:16px;height:16px;flex-shrink:0;opacity:.7;}
+.nav-item.active .nav-icon{opacity:1;}
+.nav-label{flex:1;}
+.nav-badge{font-size:10px;font-weight:600;padding:2px 6px;border-radius:20px;}
+.nb-red{background:var(--red-bg);color:var(--red);}
+.nb-amber{background:var(--amber-bg);color:var(--amber);}
+.project-node{padding:6px 14px;margin:1px 6px;border-radius:var(--radius-sm);cursor:pointer;font-size:12px;color:var(--text-secondary);transition:all 0.15s;}
+.project-node:hover{background:var(--bg-hover);color:var(--text-primary);}
+.project-node.parent{font-weight:600;color:var(--text-primary);font-size:13px;}
+.project-node.child{padding-left:28px;}
+.sidebar-footer{padding:10px 14px;border-top:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;gap:8px;}
+.sf-text{font-size:10px;color:var(--text-muted);flex:1;min-width:0;}
+.footer-btns{display:flex;gap:6px;flex-shrink:0;}
+.icon-btn{width:26px;height:26px;background:var(--bg-elevated);border:1px solid var(--border);border-radius:var(--radius-sm);cursor:pointer;display:flex;align-items:center;justify-content:center;color:var(--text-secondary);transition:all 0.15s;font-size:13px;}
+.icon-btn:hover{background:var(--bg-hover);color:var(--text-primary);}
+.theme-pill{width:36px;height:20px;background:var(--bg-elevated);border-radius:10px;border:1px solid var(--border-md);cursor:pointer;position:relative;transition:background .2s;}
+.theme-pill::after{content:'';position:absolute;top:3px;left:3px;width:12px;height:12px;border-radius:50%;background:var(--text-muted);transition:transform .2s,background .2s;}
+[data-theme="light"] .theme-pill{background:var(--brand-glow);}
+[data-theme="light"] .theme-pill::after{transform:translateX(16px);background:var(--brand);}
+/* MAIN */
+.main{flex:1;display:flex;flex-direction:column;overflow:hidden;}
+.topbar{height:var(--topbar-h);background:var(--bg-surface);border-bottom:1px solid var(--border);display:flex;align-items:center;padding:0 20px;gap:10px;flex-shrink:0;}
+.collapse-btn{width:28px;height:28px;background:transparent;border:1px solid var(--border);border-radius:var(--radius-sm);cursor:pointer;display:flex;align-items:center;justify-content:center;color:var(--text-secondary);font-size:14px;}
+.collapse-btn:hover{background:var(--bg-hover);}
+.topbar-title{font-size:15px;font-weight:600;}
+.topbar-sub{font-size:11px;color:var(--text-secondary);}
+.topbar-spacer{flex:1;}
+.search-wrap{position:relative;width:220px;}
+.search-input{width:100%;padding:7px 10px 7px 30px;background:var(--bg-elevated);border:1px solid var(--border-md);border-radius:var(--radius-sm);color:var(--text-primary);font-family:var(--font);font-size:12px;outline:none;transition:all .15s;}
+.search-input:focus{border-color:var(--brand);box-shadow:0 0 0 3px var(--brand-glow);}
+.search-icon{position:absolute;left:9px;top:50%;transform:translateY(-50%);color:var(--text-muted);pointer-events:none;font-size:12px;}
+.search-results{position:absolute;top:calc(100% + 4px);left:0;right:0;background:var(--bg-elevated);border:1px solid var(--border-md);border-radius:var(--radius-md);box-shadow:var(--shadow-el);z-index:1000;display:none;max-height:260px;overflow-y:auto;}
+.search-results.open{display:block;}
+.sr-item{padding:9px 12px;cursor:pointer;font-size:12px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:8px;}
+.sr-item:last-child{border-bottom:none;}
+.sr-item:hover{background:var(--bg-hover);}
+.sr-type{font-size:10px;color:var(--text-muted);margin-left:auto;}
+.topbar-btn{display:flex;align-items:center;gap:5px;padding:6px 12px;border-radius:var(--radius-sm);font-size:12px;font-weight:500;cursor:pointer;border:1px solid var(--border-md);background:var(--bg-elevated);color:var(--text-secondary);transition:all .15s;font-family:var(--font);white-space:nowrap;}
+.topbar-btn:hover{background:var(--bg-hover);color:var(--text-primary);}
+.topbar-btn.primary{background:var(--brand);color:#fff;border-color:var(--brand);}
+.topbar-btn.primary:hover{background:var(--brand-dim);}
+.status-dot{width:7px;height:7px;border-radius:50%;background:var(--amber);flex-shrink:0;}
+.status-dot.green{background:var(--green);}
+/* CONTENT */
+.content{flex:1;overflow-y:auto;padding:20px 24px;}
+.page{display:none;animation:fadeIn .2s ease;}
+.page.active{display:block;}
+@keyframes fadeIn{from{opacity:0;transform:translateY(4px)}to{opacity:1;transform:translateY(0)}}
+/* LOADING */
+.loading-bar{position:fixed;top:0;left:0;height:2px;background:var(--brand);z-index:9999;transition:width .3s;width:0;}
+/* SMART SUMMARY */
+.smart-summary{background:linear-gradient(135deg,var(--brand-glow2),rgba(72,161,199,0.03));border:1px solid rgba(72,161,199,0.2);border-radius:var(--radius-lg);padding:13px 16px;margin-bottom:16px;display:flex;align-items:center;gap:12px;}
+.smart-summary-text{font-size:13px;line-height:1.6;}
+.smart-summary-text strong{color:var(--brand);}
+/* COD COUNTDOWN */
+.cod-countdown{background:var(--bg-card);border:1px solid var(--border);border-radius:var(--radius-lg);padding:16px;display:flex;align-items:center;gap:20px;margin-bottom:16px;flex-wrap:wrap;}
+.cod-lbl{font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:.06em;color:var(--text-muted);margin-bottom:5px;}
+.cod-units{display:flex;gap:12px;}
+.cod-unit{text-align:center;}
+.cod-num{font-size:26px;font-weight:700;line-height:1;font-family:var(--mono);}
+.cod-ulbl{font-size:10px;color:var(--text-muted);margin-top:2px;}
+.cod-divider{width:1px;background:var(--border);height:46px;flex-shrink:0;}
+.cod-info{flex:1;}
+.cod-title{font-size:14px;font-weight:600;margin-bottom:3px;}
+.cod-sub{font-size:11px;color:var(--text-secondary);}
+/* SECTION HEADER */
+.section-header{margin-bottom:16px;display:flex;align-items:flex-start;justify-content:space-between;}
+.section-title{font-size:20px;font-weight:600;}
+.section-sub{font-size:12px;color:var(--text-secondary);margin-top:2px;}
+/* KPI GRID */
+.kpi-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(152px,1fr));gap:10px;margin-bottom:16px;}
+.kpi-card{background:var(--bg-card);border:1px solid var(--border);border-radius:var(--radius-lg);padding:14px;position:relative;overflow:hidden;transition:border-color .2s,transform .15s;}
+.kpi-card:hover{border-color:var(--border-md);transform:translateY(-1px);}
+.kpi-card::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:linear-gradient(90deg,var(--brand),transparent);opacity:.6;}
+.kpi-label{font-size:10px;font-weight:600;color:var(--text-secondary);text-transform:uppercase;letter-spacing:.05em;margin-bottom:5px;}
+.kpi-value{font-size:22px;font-weight:600;line-height:1;}
+.kpi-sub{font-size:10px;color:var(--text-muted);margin-top:3px;}
+/* GRID */
+.grid-2{display:grid;grid-template-columns:1fr 1fr;gap:13px;margin-bottom:13px;}
+.grid-3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:13px;margin-bottom:13px;}
+.grid-2-1{display:grid;grid-template-columns:2fr 1fr;gap:13px;margin-bottom:13px;}
+@media(max-width:1100px){.grid-2,.grid-3,.grid-2-1{grid-template-columns:1fr;}}
+/* CARDS */
+.card{background:var(--bg-card);border:1px solid var(--border);border-radius:var(--radius-lg);overflow:hidden;box-shadow:var(--shadow-card);margin-bottom:13px;}
+.card-header{padding:12px 15px 10px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;}
+.card-title{font-size:13px;font-weight:600;display:flex;align-items:center;gap:7px;}
+.card-actions{display:flex;gap:6px;align-items:center;}
+.card-body{padding:13px 15px;}
+.card-body.np{padding:0;}
+/* TABLE */
+.table-wrap{overflow-x:auto;}
+table{width:100%;border-collapse:collapse;font-size:12px;}
+thead th{padding:7px 10px;text-align:left;font-size:10px;font-weight:600;color:var(--text-muted);text-transform:uppercase;letter-spacing:.05em;background:var(--bg-elevated);border-bottom:1px solid var(--border);white-space:nowrap;position:sticky;top:0;z-index:1;}
+tbody td{padding:8px 10px;border-bottom:1px solid var(--border);vertical-align:middle;color:var(--text-secondary);}
+tbody tr:last-child td{border-bottom:none;}
+tbody tr:hover td{background:var(--bg-hover);}
+/* INLINE EDIT */
+.editable{background:transparent;border:none;color:var(--text-secondary);font-family:var(--font);font-size:12px;width:100%;padding:2px 4px;border-radius:3px;transition:all .15s;}
+.editable:hover{background:var(--bg-elevated);}
+.editable:focus{outline:none;background:var(--bg-elevated);box-shadow:0 0 0 2px rgba(72,161,199,.3);color:var(--text-primary);}
+select.editable{cursor:pointer;}
+.saving{opacity:.5;pointer-events:none;}
+/* BADGES */
+.badge{display:inline-flex;align-items:center;gap:4px;padding:3px 8px;border-radius:20px;font-size:11px;font-weight:500;white-space:nowrap;}
+.badge-critical{background:var(--red-bg);color:var(--red);}
+.badge-high{background:var(--amber-bg);color:var(--amber);}
+.badge-medium{background:var(--blue-bg);color:var(--blue);}
+.badge-low{background:var(--green-bg);color:var(--green);}
+.badge-compliant,.badge-completed,.badge-continuous{background:var(--green-bg);color:var(--green);}
+.badge-risk,.badge-open{background:var(--red-bg);color:var(--red);}
+.badge-pending,.badge-upcoming{background:rgba(139,148,158,.1);color:var(--text-secondary);}
+.badge-progress,.badge-monitoring{background:var(--blue-bg);color:var(--blue);}
+.badge-precod{background:var(--purple-bg);color:var(--purple);}
+/* RAG */
+.rag{width:8px;height:8px;border-radius:50%;display:inline-block;flex-shrink:0;}
+.rag-green{background:var(--green);box-shadow:0 0 4px var(--green);}
+.rag-amber{background:var(--amber);box-shadow:0 0 4px var(--amber);}
+.rag-red{background:var(--red);box-shadow:0 0 4px var(--red);}
+/* PROGRESS */
+.progress-wrap{background:var(--bg-elevated);border-radius:4px;height:5px;overflow:hidden;min-width:60px;}
+.progress-fill{height:100%;border-radius:4px;transition:width .4s;}
+/* TREND */
+.trend-down{color:var(--red);font-size:11px;}
+.trend-up{color:var(--green);font-size:11px;}
+.trend-stable{color:var(--text-secondary);font-size:11px;}
+/* BTNS */
+.btn{display:inline-flex;align-items:center;gap:5px;padding:6px 12px;border-radius:var(--radius-sm);font-size:12px;font-weight:500;cursor:pointer;border:1px solid var(--border-md);background:var(--bg-elevated);color:var(--text-secondary);transition:all .15s;font-family:var(--font);}
+.btn:hover{background:var(--bg-hover);color:var(--text-primary);}
+.btn-primary{background:var(--brand);color:#fff;border-color:var(--brand);}
+.btn-primary:hover{background:var(--brand-dim);}
+.btn-danger{background:var(--red-bg);color:var(--red);border-color:transparent;}
+.btn-danger:hover{background:rgba(248,81,73,.2);}
+.btn-sm{padding:4px 8px;font-size:11px;}
+.btn-ghost{background:transparent;border-color:transparent;color:var(--text-muted);}
+/* PLANT CARDS */
+.plant-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:10px;}
+.plant-card{background:var(--bg-elevated);border:1px solid var(--border);border-radius:var(--radius-lg);padding:13px;transition:border-color .2s,transform .15s;}
+.plant-card:hover{border-color:var(--border-md);transform:translateY(-1px);}
+.plant-card-id{font-size:10px;font-weight:600;color:var(--brand);font-family:var(--mono);margin-bottom:2px;}
+.plant-card-name{font-size:13px;font-weight:600;}
+.plant-card-tech{font-size:11px;color:var(--text-muted);margin-bottom:9px;}
+.plant-row{display:flex;justify-content:space-between;font-size:11px;margin-bottom:3px;}
+.plant-row-label{color:var(--text-muted);}
+.plant-row-value{color:var(--text-secondary);font-weight:500;}
+/* RISK MATRIX */
+.risk-matrix{display:grid;grid-template-columns:1fr 1fr;gap:1px;background:var(--border);border-radius:var(--radius-md);overflow:hidden;}
+.risk-cell{padding:14px;background:var(--bg-card);display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:78px;}
+.risk-number{font-size:30px;font-weight:700;line-height:1;}
+.risk-label{font-size:11px;font-weight:500;margin-top:3px;opacity:.85;}
+/* COMPLIANCE TILES */
+.compliance-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(175px,1fr));gap:8px;}
+.compliance-tile{background:var(--bg-elevated);border:1px solid var(--border);border-radius:var(--radius-md);padding:11px;}
+.compliance-tile-label{font-size:10px;color:var(--text-muted);margin-bottom:4px;}
+.compliance-tile-score{font-size:18px;font-weight:700;margin-bottom:3px;}
+/* GAUGE */
+.gauge-container{display:flex;flex-direction:column;align-items:center;}
+.gauge-val{font-size:22px;font-weight:700;margin-top:-8px;}
+.gauge-lbl{font-size:11px;color:var(--text-muted);margin-top:2px;}
+/* ALERT CARDS */
+.alert-card{background:var(--bg-card);border:1px solid var(--border);border-radius:var(--radius-lg);padding:13px;margin-bottom:8px;}
+.alert-critical{border-left:3px solid var(--red);}
+.alert-high{border-left:3px solid var(--amber);}
+.alert-low{border-left:3px solid var(--green);}
+.alert-header{display:flex;align-items:center;gap:8px;margin-bottom:7px;}
+.alert-desc{font-size:12px;color:var(--text-secondary);line-height:1.5;margin-bottom:8px;}
+.alert-meta{display:grid;grid-template-columns:repeat(auto-fill,minmax(145px,1fr));gap:6px;}
+.alert-meta-label{font-size:10px;color:var(--text-muted);margin-bottom:2px;}
+/* ESCALATION */
+.esc-row{display:grid;grid-template-columns:160px 1fr 1fr 1fr;gap:10px;padding:10px 15px;border-bottom:1px solid var(--border);font-size:12px;}
+.esc-row:last-child{border-bottom:none;}
+.esc-level{font-weight:600;}
+.esc-l1{color:var(--blue);}
+.esc-l2{color:var(--amber);}
+.esc-l3{color:var(--red);}
+/* GANTT */
+.gantt-row{display:flex;align-items:center;gap:8px;margin-bottom:7px;}
+.gantt-label{width:85px;color:var(--text-secondary);text-align:right;flex-shrink:0;font-size:10px;}
+.gantt-track{flex:1;background:var(--bg-elevated);border-radius:3px;height:20px;position:relative;}
+.gantt-bar{height:100%;border-radius:3px;display:flex;align-items:center;padding:0 6px;font-size:10px;color:#fff;font-weight:500;position:absolute;left:0;min-width:4px;}
+/* CHART LEGEND */
+.chart-legend{display:flex;flex-wrap:wrap;gap:9px;margin-bottom:7px;}
+.legend-item{display:flex;align-items:center;gap:5px;font-size:11px;color:var(--text-secondary);}
+.legend-dot{width:8px;height:8px;border-radius:2px;flex-shrink:0;}
+/* HISTORY PANEL */
+.panel-overlay{position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:500;display:none;}
+.panel-overlay.open{display:block;}
+.side-panel{position:fixed;right:0;top:0;bottom:0;width:400px;background:var(--bg-elevated);border-left:1px solid var(--border-md);z-index:501;display:flex;flex-direction:column;transform:translateX(100%);transition:transform .25s ease;}
+.side-panel.open{transform:translateX(0);}
+.panel-header{padding:15px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;}
+.panel-title{font-size:14px;font-weight:600;}
+.panel-body{flex:1;overflow-y:auto;padding:12px;}
+.history-item{padding:9px 0;border-bottom:1px solid var(--border);font-size:12px;}
+.history-item:last-child{border-bottom:none;}
+.history-time{font-size:10px;color:var(--text-muted);margin-bottom:3px;}
+.history-field{font-weight:600;margin-bottom:3px;}
+.history-old{color:var(--red);text-decoration:line-through;}
+.history-new{color:var(--green);}
+/* MODAL */
+.modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.7);z-index:1000;display:none;align-items:center;justify-content:center;}
+.modal-overlay.open{display:flex;}
+.modal{background:var(--bg-elevated);border:1px solid var(--border-md);border-radius:var(--radius-xl);padding:22px;width:500px;max-width:92vw;max-height:85vh;overflow-y:auto;box-shadow:var(--shadow-el);}
+.modal-title{font-size:15px;font-weight:600;margin-bottom:13px;}
+.modal-field{margin-bottom:10px;}
+.modal-label{font-size:11px;font-weight:500;color:var(--text-secondary);margin-bottom:3px;}
+.modal-input{width:100%;padding:7px 10px;background:var(--bg-input);border:1px solid var(--border-md);border-radius:var(--radius-sm);color:var(--text-primary);font-family:var(--font);font-size:12px;}
+.modal-input:focus{outline:none;border-color:var(--brand);box-shadow:0 0 0 3px var(--brand-glow);}
+.modal-footer{display:flex;gap:8px;justify-content:flex-end;margin-top:13px;}
+/* TOAST */
+.toast{position:fixed;bottom:20px;right:20px;background:var(--bg-elevated);border:1px solid var(--border-md);border-radius:var(--radius-md);padding:10px 14px;font-size:12px;color:var(--text-primary);box-shadow:var(--shadow-el);z-index:2000;opacity:0;transform:translateY(8px);transition:all .25s;display:flex;align-items:center;gap:8px;}
+.toast.show{opacity:1;transform:translateY(0);}
+.toast-dot{width:6px;height:6px;border-radius:50%;background:var(--green);}
+.toast-dot.warn{background:var(--amber);}
+.toast-dot.err{background:var(--red);}
+/* MISC */
+.divider{height:1px;background:var(--border);margin:14px 0;}
+.sec-label{font-size:10px;font-weight:600;letter-spacing:.08em;color:var(--text-muted);text-transform:uppercase;margin-bottom:8px;}
+.ld-highlight td{background:rgba(248,81,73,.05) !important;}
+::-webkit-scrollbar{width:4px;height:4px;}
+::-webkit-scrollbar-track{background:transparent;}
+::-webkit-scrollbar-thumb{background:var(--border-strong);border-radius:2px;}
+/* F15 - Mobile responsive */
+@media(max-width:768px){
+  .sidebar{position:fixed;left:0;top:0;bottom:0;z-index:200;transform:translateX(-100%);transition:transform .25s;}
+  .sidebar.mobile-open{transform:translateX(0);}
+  .sidebar.collapsed{width:var(--sidebar-w);transform:translateX(-100%);}
+  .sidebar.collapsed.mobile-open{transform:translateX(0);}
+  .main{width:100vw;}
+  .topbar{padding:0 12px;gap:6px;}
+  .search-wrap{width:140px;}
+  .content{padding:12px;}
+  .mobile-overlay{position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:199;display:none;}
+  .mobile-overlay.open{display:block;}
+}
+@media print{
+  .sidebar,.topbar,.modal-overlay,.toast,.side-panel,.panel-overlay,.topbar-btn,.btn{display:none!important;}
+  .main{overflow:visible;}
+  .content{overflow:visible;padding:0;}
+  .page{display:block!important;}
+  .card{break-inside:avoid;box-shadow:none;border:1px solid #ccc;}
+  body{background:#fff;color:#000;}
+}
+.empty-state{padding:32px;text-align:center;color:var(--text-muted);font-size:13px;}
+.empty-state-icon{font-size:28px;margin-bottom:8px;}
+.empty-state-text{margin-bottom:8px;font-weight:500;}
+.empty-state-sub{font-size:11px;}
+.comment-dot{width:7px;height:7px;border-radius:50%;background:var(--brand);display:inline-block;margin-left:3px;vertical-align:middle;}
+.comment-item{padding:7px 0;border-bottom:1px solid var(--border);font-size:12px;}
+.comment-item:last-child{border-bottom:none;}
+.comment-meta{font-size:10px;color:var(--text-muted);margin-bottom:2px;}
+.comment-text{color:var(--text-secondary);}
+.pagination{display:flex;align-items:center;gap:6px;padding:10px 15px;border-top:1px solid var(--border);justify-content:flex-end;}
+.page-btn{width:28px;height:28px;display:flex;align-items:center;justify-content:center;border-radius:var(--radius-sm);border:1px solid var(--border-md);background:var(--bg-elevated);color:var(--text-secondary);cursor:pointer;font-size:12px;}
+.page-btn:hover{background:var(--bg-hover);color:var(--text-primary);}
+.page-btn.active{background:var(--brand);color:#fff;border-color:var(--brand);}
+.page-info{font-size:11px;color:var(--text-muted);}
+.widget-toggle{display:flex;align-items:center;justify-content:space-between;padding:9px 0;border-bottom:1px solid var(--border);}
+.widget-toggle:last-child{border-bottom:none;}
+.toggle-switch{width:36px;height:20px;background:var(--bg-elevated);border-radius:10px;border:1px solid var(--border-md);cursor:pointer;position:relative;transition:background .2s;flex-shrink:0;}
+.toggle-switch.on{background:var(--brand);border-color:var(--brand);}
+.toggle-switch::after{content:'';position:absolute;top:3px;left:3px;width:12px;height:12px;border-radius:50%;background:#fff;transition:transform .2s;}
+.toggle-switch.on::after{transform:translateX(16px);}
+.project-switcher{padding:0 12px;margin-bottom:6px;}
+.project-select{width:100%;padding:6px 8px;background:var(--bg-elevated);border:1px solid var(--border-md);border-radius:var(--radius-sm);color:var(--text-primary);font-family:var(--font);font-size:12px;cursor:pointer;}
+.project-select:focus{outline:none;border-color:var(--brand);}
+.editable.save-err{box-shadow:0 0 0 2px rgba(248,81,73,.4);background:var(--red-bg);}
+.import-area{border:2px dashed var(--border-md);border-radius:var(--radius-lg);padding:22px;text-align:center;cursor:pointer;transition:all .2s;margin-bottom:10px;}
+.import-area:hover,.import-area.drag-over{border-color:var(--brand);background:var(--brand-glow2);}
+.import-area-text{font-size:13px;color:var(--text-secondary);}
+.import-area-sub{font-size:11px;color:var(--text-muted);margin-top:3px;}
+</style>
+</head>
+<body>
+<div class="loading-bar" id="loadingBar"></div>
+<div class="app">
+<!-- SIDEBAR -->
+<aside class="sidebar" id="sidebar">
+  <div class="sidebar-logo">
+    <div class="logo-icon">⚡</div>
+    <div class="logo-texts"><div class="logo-name">PSA Analytics</div><div class="logo-sub">Sanathan · SRI33PL · 32 MW</div></div>
+  </div>
+  <div class="view-toggle">
+    <button class="view-btn active" id="btnSheet" onclick="setView('sheet')">Sheet</button>
+    <button class="view-btn" id="btnProject" onclick="setView('project')">Project</button>
+  </div>
+  <div class="project-switcher" id="projectSwitcherWrap" style="display:none">
+    <select class="project-select" id="projectSwitcher" onchange="switchProject(this.value)"></select>
+  </div>
+  <nav class="sidebar-nav" id="sidebarNav"></nav>
+  <div class="sidebar-footer">
+    <span class="sf-text" id="lastUpdated">Loading…</span>
+    <div class="footer-btns">
+      <div class="icon-btn" onclick="openHistory()" title="Change history">🕐</div>
+      <div class="theme-pill" onclick="toggleTheme()" title="Toggle theme"></div>
+    </div>
+  </div>
+</aside>
+<!-- MAIN -->
+<div class="main">
+  <div class="topbar">
+    <button class="collapse-btn" onclick="toggleSidebar()">☰</button>
+    <div class="status-dot green" id="statusDot"></div>
+    <div><div class="topbar-title" id="topbarTitle">Executive Dashboard</div><div class="topbar-sub" id="topbarSub">Captive Power Supply Agreement · Sanathan Textiles Limited</div></div>
+    <div class="topbar-spacer"></div>
+    <div class="search-wrap">
+      <span class="search-icon">🔍</span>
+      <input class="search-input" id="globalSearch" placeholder="Search anything…" oninput="handleSearch(this.value)" onblur="setTimeout(closeSearch,200)" autocomplete="off">
+      <div class="search-results" id="searchResults"></div>
+    </div>
+    <button class="topbar-btn" onclick="openCSVModal()" title="Import CSV">⬆ CSV</button>
+    <button class="topbar-btn" onclick="openWidgetModal()" title="Dashboard widgets">⊞ Widgets</button>
+    <button class="topbar-btn" onclick="printPage()" title="Print current page">🖨 Print</button>
+    <button class="topbar-btn" onclick="generateReport()">✉ Report</button>
+    <button class="topbar-btn" onclick="exportJSON()">⬇ Export</button>
+    <button class="topbar-btn primary" onclick="showPage(currentPage)">↺ Refresh</button>
+  </div>
+  <div class="content" id="content">
+    <!-- DASHBOARD -->
+    <div class="page active" id="page-dashboard">
+      <div class="section-header">
+        <div><div class="section-title">Executive Dashboard</div><div class="section-sub">Captive Power Supply Agreement · 3 Plants · Multi-State</div></div>
+      </div>
+      <div class="smart-summary" id="smartSummary"><span style="font-size:20px">📊</span><div class="smart-summary-text" id="smartText">Loading…</div></div>
+      <div class="cod-countdown" id="codCountdown"></div>
+      <div class="kpi-grid" id="dashKPIs"></div>
+      <div class="grid-2-1">
+        <div class="card">
+          <div class="card-header"><div class="card-title">Plant structure — SRI33PL</div></div>
+          <div class="card-body"><div class="plant-grid" id="plantCards"></div></div>
+        </div>
+        <div class="card">
+          <div class="card-header"><div class="card-title">Risk matrix</div></div>
+          <div class="card-body">
+            <div class="risk-matrix">
+              <div class="risk-cell" style="background:rgba(248,81,73,.05)"><div class="risk-number" style="color:var(--red)" id="rmC">—</div><div class="risk-label" style="color:var(--red)">Critical</div></div>
+              <div class="risk-cell" style="background:rgba(210,153,34,.05)"><div class="risk-number" style="color:var(--amber)" id="rmH">—</div><div class="risk-label" style="color:var(--amber)">High</div></div>
+              <div class="risk-cell" style="background:rgba(88,166,255,.05)"><div class="risk-number" style="color:var(--blue)" id="rmM">—</div><div class="risk-label" style="color:var(--blue)">Medium</div></div>
+              <div class="risk-cell" style="background:rgba(63,185,80,.05)"><div class="risk-number" style="color:var(--green)" id="rmL">—</div><div class="risk-label" style="color:var(--green)">Low</div></div>
+            </div>
+            <div style="margin-top:13px"><div class="sec-label">Critical alerts</div><div id="dashAlerts"></div></div>
+          </div>
+        </div>
+      </div>
+      <div class="grid-3">
+        <div class="card"><div class="card-header"><div class="card-title">Compliance gauge</div></div>
+          <div class="card-body" style="display:flex;justify-content:center"><div class="gauge-container"><canvas id="gaugeC" width="180" height="110"></canvas><div class="gauge-val" id="gCV">—</div><div class="gauge-lbl">Aggregate Score</div></div></div>
+        </div>
+        <div class="card"><div class="card-header"><div class="card-title">MSG achievement</div></div>
+          <div class="card-body" style="display:flex;justify-content:center"><div class="gauge-container"><canvas id="gaugeM" width="180" height="110"></canvas><div class="gauge-val" id="gMV">—</div><div class="gauge-lbl">Portfolio Avg</div></div></div>
+        </div>
+        <div class="card"><div class="card-header"><div class="card-title">Risk health</div></div>
+          <div class="card-body" style="display:flex;justify-content:center"><div class="gauge-container"><canvas id="gaugeR" width="180" height="110"></canvas><div class="gauge-val" id="gRV">—</div><div class="gauge-lbl">Avg Risk Score</div></div></div>
+        </div>
+      </div>
+      <div class="grid-2">
+        <div class="card"><div class="card-header"><div class="card-title">MSG achievement by plant</div></div>
+          <div class="card-body"><div style="position:relative;height:210px"><canvas id="chartMSG"></canvas></div></div>
+        </div>
+        <div class="card"><div class="card-header"><div class="card-title">Compliance scores</div></div>
+          <div class="card-body"><div class="compliance-grid" id="compTiles"></div></div>
+        </div>
+      </div>
+      <div class="card"><div class="card-header"><div class="card-title">10-year revenue projection (₹ Cr)</div><div class="card-actions"><button class="btn btn-sm" onclick="showPage('revenue')">Full view →</button></div></div>
+        <div class="card-body"><div class="chart-legend" id="revLeg"></div><div style="position:relative;height:195px"><canvas id="chartRevPrev"></canvas></div></div>
+      </div>
+    </div>
+    <!-- VOLUME -->
+    <div class="page" id="page-volume">
+      <div class="section-header"><div><div class="section-title">Volume & MSG Tracker</div><div class="section-sub">Minimum Supply Guarantee · Sections A–E</div></div></div>
+      <div class="kpi-grid" id="volKPIs"></div>
+      <div class="grid-2">
+        <div class="card"><div class="card-header"><div class="card-title">PSA summary</div></div><div class="card-body"><table><tbody id="psaSummaryTbl"></tbody></table></div></div>
+        <div class="card"><div class="card-header"><div class="card-title">Monthly generation vs MSG floor (MU)</div></div>
+          <div class="card-body"><div class="chart-legend" id="volLeg"></div><div style="position:relative;height:215px"><canvas id="chartVol"></canvas></div></div>
+        </div>
+      </div>
+      <div class="card" style="border-color:rgba(72,161,199,.3)">
+        <div class="card-header" style="background:var(--brand-glow2)">
+          <div class="card-title" style="color:var(--brand)">⚡ Auto LD Calculator</div>
+          <div class="card-actions">
+            <input type="number" id="ldMonths" placeholder="Months elapsed" style="width:130px;padding:5px 8px;background:var(--bg-input);border:1px solid var(--border-md);border-radius:var(--radius-sm);color:var(--text-primary);font-size:12px;" min="0" max="12">
+            <button class="btn btn-sm btn-primary" onclick="calcAndSaveLD()">Calculate & Save</button>
+          </div>
+        </div>
+        <div class="card-body np"><div class="table-wrap"><table>
+          <thead><tr><th>Plant</th><th>Annual MSG</th><th>YTD Actual ✏</th><th>Pro-rated</th><th>Shortfall</th><th>LD Rate</th><th>Gross LD</th><th>Status</th></tr></thead>
+          <tbody id="ldAutoTbl"></tbody>
+        </table></div></div>
+      </div>
+      <div class="card">
+        <div class="card-header"><div class="card-title">25-year minimum offtake (MU/yr)</div>
+          <div class="card-actions"><button class="btn btn-sm" onclick="addOfftakeRow()">+ Year</button><button class="btn btn-sm btn-primary" onclick="refreshVolCharts()">↺ Charts</button></div>
+        </div>
+        <div class="card-body np"><div class="table-wrap"><table>
+          <thead><tr><th>Year</th><th>Expected energy (MU)</th><th>Min offtake MSG (MU)</th><th>Degradation %</th><th></th></tr></thead>
+          <tbody id="offtakeTbl"></tbody>
+        </table></div></div>
+      </div>
+      <div class="card">
+        <div class="card-header"><div class="card-title">Monthly generation — editable (F3)</div>
+          <div class="card-actions"><button class="btn btn-sm btn-primary" onclick="refreshVolCharts()">↺ Charts</button></div>
+        </div>
+        <div class="card-body np"><div class="table-wrap"><table>
+          <thead><tr><th>Plant</th><th>Ann.Guar.</th><th>Jul</th><th>Aug</th><th>Sep</th><th>Oct</th><th>Nov</th><th>Dec</th><th>Jan</th><th>Feb</th><th>Mar</th><th></th></tr></thead>
+          <tbody id="genTbl"></tbody>
+        </table></div></div>
+      </div>
+      <div class="card"><div class="card-header"><div class="card-title">PSA term progress</div></div>
+        <div class="card-body np"><div class="table-wrap"><table>
+          <thead><tr><th>Plant</th><th>COD</th><th>Tariff</th><th>Yrs Elapsed</th><th>Yrs Remaining</th><th>% Term</th><th>Cum MSG</th><th>Cum Actual</th><th>Notes</th></tr></thead>
+          <tbody id="psaTermTbl"></tbody>
+        </table></div></div>
+      </div>
+    </div>
+    <!-- REVENUE -->
+    <div class="page" id="page-revenue">
+      <div class="section-header"><div><div class="section-title">Revenue Tracker</div><div class="section-sub">Generation × Tariff × Billing × Collections</div></div></div>
+      <div class="kpi-grid" id="revKPIs"></div>
+      <div class="grid-2">
+        <div class="card"><div class="card-header"><div class="card-title">10-year revenue projection (₹ Cr/yr)</div></div>
+          <div class="card-body"><div class="chart-legend" id="revProjLeg"></div><div style="position:relative;height:235px"><canvas id="chartRevProj"></canvas></div></div>
+        </div>
+        <div class="card"><div class="card-header"><div class="card-title">Revenue waterfall (₹ Cr)</div></div>
+          <div class="card-body"><div style="position:relative;height:235px"><canvas id="chartWF"></canvas></div></div>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-header"><div class="card-title">Monthly revenue vs MSG floor (₹ Cr) — F2</div></div>
+        <div class="card-body"><div style="position:relative;height:220px"><canvas id="chartRevMonthly"></canvas></div></div>
+      </div>
+      <div class="card">
+        <div class="card-header"><div class="card-title">Monthly plant revenue (₹ Cr)</div>
+          <div class="card-actions"><button class="btn btn-sm" onclick="addRevRow()">+ Row</button><button class="btn btn-sm btn-primary" onclick="refreshRevCharts()">↺ Charts</button></div>
+        </div>
+        <div class="card-body np"><div class="table-wrap"><table>
+          <thead><tr><th>Plant</th><th>State</th><th>Tariff</th><th>Jul</th><th>Aug</th><th>Sep</th><th>Oct</th><th>Nov</th><th>Dec</th><th>Jan</th><th>Feb</th><th>Mar</th><th>YTD Rev</th><th>Billed</th><th>Collected</th><th>Outstanding</th><th></th></tr></thead>
+          <tbody id="revTbl"></tbody>
+        </table></div></div>
+      </div>
+      <div class="card">
+        <div class="card-header"><div class="card-title">Waterfall stages</div>
+          <div class="card-actions"><button class="btn btn-sm" onclick="addWFRow()">+ Stage</button><button class="btn btn-sm btn-primary" onclick="refreshRevCharts()">↺ Charts</button></div>
+        </div>
+        <div class="card-body np"><div class="table-wrap"><table>
+          <thead><tr><th>Stage</th><th>Value (₹ Cr)</th><th></th></tr></thead>
+          <tbody id="wfTbl"></tbody>
+        </table></div></div>
+      </div>
+    </div>
+    <!-- RISKS -->
+    <div class="page" id="page-risks">
+      <div class="section-header"><div><div class="section-title">Commercial Risk Register</div><div class="section-sub">Multi-plant · Multi-state</div></div></div>
+      <div class="grid-2">
+        <div class="card"><div class="card-header"><div class="card-title">Risk heat map</div></div>
+          <div class="card-body"><div style="position:relative;height:275px"><canvas id="chartRisk"></canvas></div></div>
+        </div>
+        <div class="card"><div class="card-header"><div class="card-title">Risk score radar</div></div>
+          <div class="card-body"><div style="position:relative;height:275px"><canvas id="chartRadar"></canvas></div></div>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-header"><div class="card-title">Risk register</div>
+          <div class="card-actions"><button class="btn btn-sm" onclick="addRiskRow()">+ Risk</button><button class="btn btn-sm btn-primary" onclick="refreshRiskCharts()">↺ Charts</button></div>
+        </div>
+        <div class="card-body np"><div class="table-wrap"><table>
+          <thead><tr><th>ID</th><th>Category</th><th>Severity</th><th>RAG</th><th>Likelihood</th><th>Impact</th><th>Score</th><th>Trend</th><th>Status</th><th>Last Reviewed</th><th></th></tr></thead>
+          <tbody id="riskTbl"></tbody>
+        </table></div></div>
+      </div>
+    </div>
+    <!-- COMPLIANCE -->
+    <div class="page" id="page-compliance">
+      <div class="section-header"><div><div class="section-title">Regulatory Compliance</div><div class="section-sub">CERC · MERC · KERC · RRERC · IEGC · EA 2003 · MNRE · CEA · GST</div></div></div>
+      <div class="kpi-grid" id="compKPIs"></div>
+      <div class="card"><div class="card-header"><div class="card-title">Compliance scores overview</div></div>
+        <div class="card-body"><div style="position:relative;height:255px"><canvas id="chartComp"></canvas></div></div>
+      </div>
+      <div class="card">
+        <div class="card-header"><div class="card-title">Compliance register</div>
+          <div class="card-actions"><button class="btn btn-sm" onclick="addCompRow()">+ Item</button><button class="btn btn-sm btn-primary" onclick="refreshCompCharts()">↺ Charts</button></div>
+        </div>
+        <div class="card-body np"><div class="table-wrap"><table>
+          <thead><tr><th>Ref</th><th>Area</th><th>Status</th><th>RAG</th><th>Score</th><th>Progress</th><th>Last Audit</th><th>Next Audit</th><th>Responsible</th><th>Action</th><th></th></tr></thead>
+          <tbody id="compTbl"></tbody>
+        </table></div></div>
+      </div>
+    </div>
+    <!-- POST COD -->
+    <div class="page" id="page-postcod">
+      <div class="section-header"><div><div class="section-title">Post COD Tracker</div><div class="section-sub">Pre-COD · COD · MSG / Revenue · Regulatory · Commercial</div></div></div>
+      <div class="kpi-grid" id="postKPIs"></div>
+      <div class="card"><div class="card-header"><div class="card-title">Critical path — Gantt view</div></div><div class="card-body" id="ganttArea"></div></div>
+      <div class="card">
+        <div class="card-header"><div class="card-title">Post COD checklist</div>
+          <div class="card-actions"><button class="btn btn-sm" onclick="addPostCODRow()">+ Item</button></div>
+        </div>
+        <div class="card-body np"><div class="table-wrap"><table>
+          <thead><tr><th>ID</th><th>Category</th><th>Description</th><th>Planned</th><th>Actual</th><th>% Done</th><th>Progress</th><th>Status</th><th>Priority</th><th>Responsible</th><th>Due By</th><th></th></tr></thead>
+          <tbody id="postTbl"></tbody>
+        </table></div></div>
+      </div>
+    </div>
+    <!-- MILESTONES -->
+    <div class="page" id="page-milestones">
+      <div class="section-header"><div><div class="section-title">PSA Milestone Tracker</div><div class="section-sub">18 milestones · Pre-COD to termination clauses</div></div></div>
+      <div class="kpi-grid" id="msKPIs"></div>
+      <div class="card"><div class="card-header"><div class="card-title">Milestone completion overview</div></div>
+        <div class="card-body"><div style="position:relative;height:330px"><canvas id="chartMS"></canvas></div></div>
+      </div>
+      <div class="card">
+        <div class="card-header"><div class="card-title">All milestones</div>
+          <div class="card-actions"><button class="btn btn-sm" onclick="addMSRow()">+ Milestone</button><button class="btn btn-sm btn-primary" onclick="refreshMSCharts()">↺ Charts</button></div>
+        </div>
+        <div class="card-body np"><div class="table-wrap"><table>
+          <thead><tr><th>ID</th><th>Category</th><th>Description</th><th>Planned</th><th>% Done</th><th>Progress</th><th>Status</th><th>Priority</th><th>Responsible</th><th>Due By</th><th></th></tr></thead>
+          <tbody id="msTbl"></tbody>
+        </table></div></div>
+      </div>
+    </div>
+    <!-- ALERTS -->
+    <div class="page" id="page-alerts">
+      <div class="section-header"><div><div class="section-title">Alerts & Open Actions</div><div class="section-sub">Priority ranked · L1/L2/L3 escalation</div></div></div>
+      <div class="kpi-grid" id="alertKPIs"></div>
+      <div class="sec-label">Active alerts</div>
+      <div id="alertsList"></div>
+      <div class="divider"></div>
+      <div class="sec-label">Escalation protocol</div>
+      <div class="card"><div class="card-body np" id="escTable"></div></div>
+    </div>
+    <!-- PROJECT VIEW -->
+    <div class="page" id="page-project">
+      <div class="section-header"><div><div class="section-title" id="projTitle">Project Overview</div><div class="section-sub" id="projSub"></div></div></div>
+      <div id="projContent"></div>
+    </div>
+  </div>
+</div>
+</div>
+<!-- TOAST -->
+<div class="toast" id="toast"><div class="toast-dot" id="toastDot"></div><span id="toastMsg"></span></div>
+<!-- HISTORY PANEL -->
+<div class="panel-overlay" id="histOverlay" onclick="closeHistory()"></div>
+<div class="side-panel" id="histPanel">
+  <div class="panel-header"><div class="panel-title">Change history</div><button class="btn btn-sm btn-ghost" onclick="closeHistory()">✕</button></div>
+  <div class="panel-body" id="histBody"></div>
+</div>
+<!-- ADD ROW MODAL -->
+<div class="modal-overlay" id="modalOverlay">
+  <div class="modal">
+    <div class="modal-title" id="modalTitle">Add row</div>
+    <div id="modalFields"></div>
+    <div class="modal-footer">
+      <button class="btn" onclick="closeModal()">Cancel</button>
+      <button class="btn btn-primary" onclick="submitModal()">Add</button>
+    </div>
+  </div>
+</div>
+<!-- MOBILE OVERLAY -->
+<div class="mobile-overlay" id="mobileOverlay" onclick="closeMobileSidebar()"></div>
+
+<!-- COMMENTS MODAL -->
+<div class="modal-overlay" id="commentsModal">
+  <div class="modal" style="width:480px">
+    <div class="modal-title" id="commentsTitle">Comments</div>
+    <div id="commentsBody" style="max-height:240px;overflow-y:auto;margin-bottom:12px"></div>
+    <div class="modal-field">
+      <div class="modal-label">Add a comment</div>
+      <textarea class="modal-input" id="commentInput" rows="3" placeholder="Type your comment here…"></textarea>
+    </div>
+    <div class="modal-footer">
+      <button class="btn" onclick="closeCommentsModal()">Close</button>
+      <button class="btn btn-primary" onclick="submitComment()">Add comment</button>
+    </div>
+  </div>
+</div>
+
+<!-- CSV IMPORT MODAL -->
+<div class="modal-overlay" id="csvModal">
+  <div class="modal" style="width:520px">
+    <div class="modal-title">Import CSV data</div>
+    <div class="modal-tabs" style="display:flex;gap:2px;margin-bottom:12px;border-bottom:1px solid var(--border)">
+      <button class="modal-tab active" id="csvTab1" onclick="setCSVTab('monthly')">Monthly revenue</button>
+      <button class="modal-tab" id="csvTab2" onclick="setCSVTab('generation')">Monthly generation</button>
+      <button class="modal-tab" id="csvTab3" onclick="setCSVTab('ld')">LD actuals</button>
+    </div>
+    <div class="import-area" id="csvDropArea" ondragover="event.preventDefault();this.classList.add('drag-over')" ondragleave="this.classList.remove('drag-over')" ondrop="handleCSVDrop(event)" onclick="document.getElementById('csvFileInput').click()">
+      <div class="import-area-text">🗂 Drop CSV file here or click to browse</div>
+      <div class="import-area-sub" id="csvHint">Format: Plant, Jul, Aug, Sep, Oct, Nov, Dec, Jan, Feb, Mar</div>
+      <input type="file" id="csvFileInput" accept=".csv" style="display:none" onchange="handleCSVFile(this)">
+    </div>
+    <div class="modal-label" style="margin-bottom:4px">Or paste CSV text:</div>
+    <textarea class="modal-input" id="csvPaste" rows="5" placeholder="Plant,Jul,Aug,Sep&#10;PLT-01,3.2,3.1,3.0"></textarea>
+    <div class="modal-footer">
+      <button class="btn" onclick="closeCSVModal()">Cancel</button>
+      <button class="btn btn-primary" onclick="importCSV()">Import</button>
+    </div>
+  </div>
+</div>
+
+<!-- WIDGET PANEL MODAL -->
+<div class="modal-overlay" id="widgetModal">
+  <div class="modal" style="width:440px">
+    <div class="modal-title">Dashboard widgets</div>
+    <p style="font-size:12px;color:var(--text-muted);margin-bottom:12px">Toggle visibility. Drag ☰ handle to reorder.</p>
+    <div id="widgetPanelList"></div>
+    <div class="modal-footer">
+      <button class="btn" onclick="resetWidgets()">Reset</button>
+      <button class="btn btn-primary" onclick="closeWidgetModal()">Done</button>
+    </div>
+  </div>
+</div>
+
+<!-- EMAIL REPORT MODAL -->
+<div class="modal-overlay" id="reportModal">
+  <div class="modal" style="width:600px">
+    <div class="modal-title">Email-ready report</div>
+    <textarea class="modal-input" id="reportContent" rows="18" style="font-family:var(--mono);font-size:11px;resize:none;"></textarea>
+    <div class="modal-footer">
+      <button class="btn" onclick="closeReportModal()">Close</button>
+      <button class="btn btn-primary" onclick="copyReport()">Copy to clipboard</button>
+    </div>
+  </div>
+</div>
+<script>
+// ═══════════════════════════════════════════════════════════
+// GLOBALS & CONFIG
+// ═══════════════════════════════════════════════════════════
+let PROJECT_ID  = 'sanathan';
+let currentPage = 'dashboard';
+let currentView = 'sheet';
+let charts      = {};
+let modalCb     = null;
+let STATE       = {};
+let AUTH_HEADER = '';
+let _commentCtx = { entityType:'', entityId:'' };
+let _csvTab     = 'monthly';
+const PAGE_SIZE = 15; // rows per page for paginated tables
+let _pages      = {}; // current page index per table id
+
+// ── DEBOUNCE HELPER (F12) ────────────────────────────────────
+function debounce(fn, ms) {
+  let t; return (...args) => { clearTimeout(t); t = setTimeout(()=>fn(...args), ms); };
+}
+
+// ── AUTH ─────────────────────────────────────────────────────
+function initAuth() {
+  const stored = sessionStorage.getItem('psa_auth');
+  if (stored) { AUTH_HEADER = stored; return; }
+  const user = prompt('Username:', 'admin') || 'admin';
+  const pass = prompt('Password:', '') || '';
+  AUTH_HEADER = 'Basic ' + btoa(user + ':' + pass);
+  sessionStorage.setItem('psa_auth', AUTH_HEADER);
+  localStorage.setItem('psa_author', user); // F11 - store author name
+}
+
+// ── API HELPERS ──────────────────────────────────────────────
+async function api(method, path, body) {
+  const opts = { method, headers: { 'Content-Type':'application/json', 'Authorization': AUTH_HEADER } };
+  if (body) opts.body = JSON.stringify(body);
+  const res = await fetch('/api' + path, opts);
+  if (res.status === 401) { sessionStorage.removeItem('psa_auth'); toast('Session expired — refresh page','err'); throw new Error('Unauthorized'); }
+  if (!res.ok) { const e = await res.json().catch(()=>({error:res.statusText})); throw new Error(e.error||res.statusText); }
+  return res.json();
+}
+const GET    = p       => api('GET',   p);
+const POST   = (p,b)   => api('POST',  p, b);
+const PUT    = (p,b)   => api('PUT',   p, b);
+const DELETE = p       => api('DELETE',p);
+
+// ── LOADING BAR ──────────────────────────────────────────────
+function setLoading(on) {
+  const bar = document.getElementById('loadingBar');
+  bar.style.width = on ? '70%' : '100%';
+  if (!on) setTimeout(()=>{ bar.style.width='0'; }, 300);
+}
+
+// ── THEME ────────────────────────────────────────────────────
+const isDark = () => document.documentElement.getAttribute('data-theme') === 'dark';
+function toggleTheme() {
+  document.documentElement.setAttribute('data-theme', isDark()?'light':'dark');
+  localStorage.setItem('psa_theme', isDark()?'dark':'light');
+  chartDefaults(); rebuildCurrentCharts();
+}
+function chartDefaults() {
+  Chart.defaults.color       = isDark()?'#8b949e':'#5a6a7a';
+  Chart.defaults.borderColor = isDark()?'rgba(255,255,255,0.07)':'rgba(0,0,0,0.07)';
+  Chart.defaults.font.family = "'DM Sans',sans-serif";
+  Chart.defaults.font.size   = 11;
+}
+const gc = () => isDark()?'rgba(255,255,255,0.05)':'rgba(0,0,0,0.05)';
+
+// ── TOAST ────────────────────────────────────────────────────
+function toast(msg, type, dur) {
+  dur=dur||2500; type=type||'ok';
+  const el=document.getElementById('toast'), dot=document.getElementById('toastDot');
+  document.getElementById('toastMsg').textContent = msg;
+  dot.className = 'toast-dot'+(type==='warn'?' warn':type==='err'?' err':'');
+  el.classList.add('show'); setTimeout(()=>el.classList.remove('show'), dur);
+}
+
+// ── F16: PRINT ───────────────────────────────────────────────
+function printPage() { window.print(); }
+
+// ── F15: MOBILE SIDEBAR ──────────────────────────────────────
+function toggleSidebar() {
+  const sb = document.getElementById('sidebar');
+  const ov = document.getElementById('mobileOverlay');
+  if (window.innerWidth <= 768) {
+    sb.classList.toggle('mobile-open');
+    ov.classList.toggle('open');
+  } else {
+    sb.classList.toggle('collapsed');
+  }
+}
+function closeMobileSidebar() {
+  document.getElementById('sidebar').classList.remove('mobile-open');
+  document.getElementById('mobileOverlay').classList.remove('open');
+}
+
+// ── F14: EMPTY STATE ─────────────────────────────────────────
+function emptyState(msg, sub, btnLabel, btnFn) {
+  return `<div class="empty-state">
+    <div class="empty-state-icon">📭</div>
+    <div class="empty-state-text">${msg}</div>
+    <div class="empty-state-sub">${sub||''}</div>
+    ${btnLabel?`<button class="btn btn-primary btn-sm" style="margin-top:10px" onclick="${btnFn}">${btnLabel}</button>`:''}
+  </div>`;
+}
+
+// ── F17: PAGINATION HELPERS ──────────────────────────────────
+function paginate(arr, tableId) {
+  if (!_pages[tableId]) _pages[tableId] = 0;
+  const total  = arr.length;
+  const pages  = Math.ceil(total / PAGE_SIZE);
+  const cur    = Math.min(_pages[tableId], pages - 1);
+  _pages[tableId] = cur;
+  const sliced = arr.slice(cur * PAGE_SIZE, (cur + 1) * PAGE_SIZE);
+  return { sliced, cur, pages, total };
+}
+function renderPagination(tableId, pages, cur, total) {
+  if (pages <= 1) return '';
+  let btns = '';
+  for (let i=0; i<pages; i++) {
+    btns += `<button class="page-btn${i===cur?' active':''}" onclick="goPage('${tableId}',${i})">${i+1}</button>`;
+  }
+  return `<div class="pagination"><span class="page-info">${cur*PAGE_SIZE+1}–${Math.min((cur+1)*PAGE_SIZE,total)} of ${total}</span>${btns}</div>`;
+}
+function goPage(tableId, page) {
+  _pages[tableId] = page;
+  const refreshers = {
+    riskTbl:'renderRiskTable', compTbl:'renderCompTable', msTbl:'renderMSTable',
+    postTbl:'renderPostTable', offtakeTbl:'renderOfftakeTable', revTbl:'renderRevTable'
+  };
+  if (refreshers[tableId] && window[refreshers[tableId]]) window[refreshers[tableId]](STATE[_tableStateKey(tableId)]);
+}
+function _tableStateKey(id) {
+  const m = {riskTbl:'risks',compTbl:'compliance',msTbl:'milestones',postTbl:'postcod',offtakeTbl:'volOfftake',revTbl:'revMonthly'};
+  return m[id]||'';
+}
+
+// ── HELPERS ──────────────────────────────────────────────────
+function sBadge(s) {
+  const m={'Compliant':'compliant','At Risk':'risk','Pending':'pending','In Progress':'progress','Upcoming':'upcoming','Completed':'completed','Pre-COD':'precod','Open':'open','Continuous':'continuous','Monitoring':'monitoring'};
+  return `<span class="badge badge-${m[s]||'upcoming'}">${s||'—'}</span>`;
+}
+function pBadge(p) { return `<span class="badge badge-${(p||'').toLowerCase()}">${p||'—'}</span>`; }
+function pBar(pct,clr) {
+  const c=clr==='green'?'var(--green)':clr==='amber'?'var(--amber)':clr==='red'?'var(--red)':'var(--brand)';
+  const p=Math.min(100,Math.max(0,parseFloat(pct)||0));
+  return `<div class="progress-wrap"><div class="progress-fill" style="width:${p}%;background:${c}"></div></div>`;
+}
+function pctClr(v) { const n=parseFloat(v)||0; return n>=90?'green':n>=70?'amber':'red'; }
+function ragDot(type,val) {
+  if (val==null) return '—';
+  let cl; if(type==='compliance') cl=val>=85?'green':val>=70?'amber':'red'; else if(type==='risk') cl=val>=7?'red':val>=5?'amber':'green'; else cl='amber';
+  return `<span class="rag rag-${cl}"></span>`;
+}
+function dC(id) { if(charts[id]){charts[id].destroy();delete charts[id];} }
+function drawGauge(id,pct,color) {
+  const c=document.getElementById(id); if(!c)return;
+  const ctx=c.getContext('2d'); const W=c.width,H=c.height;
+  ctx.clearRect(0,0,W,H);
+  const cx=W/2,cy=H*0.88,r=W*0.38;
+  ctx.beginPath();ctx.arc(cx,cy,r,Math.PI,2*Math.PI);
+  ctx.strokeStyle=isDark()?'rgba(255,255,255,0.08)':'rgba(0,0,0,0.08)';ctx.lineWidth=12;ctx.lineCap='round';ctx.stroke();
+  const fill=Math.PI+(Math.PI*(Math.min(pct,100)/100));
+  ctx.beginPath();ctx.arc(cx,cy,r,Math.PI,fill);ctx.strokeStyle=color;ctx.lineWidth=12;ctx.lineCap='round';ctx.stroke();
+}
+function animateCount(el,target,pre,suf) {
+  pre=pre||'';suf=suf||'';
+  const step=Math.ceil(target/50);let cur=0;
+  const iv=setInterval(()=>{cur=Math.min(cur+step,target);el.textContent=pre+cur.toLocaleString('en-IN')+suf;if(cur>=target)clearInterval(iv);},16);
+}
+function getDaysToCoD() {
+  const cod=new Date(STATE.project?.codDate||'2026-06-30');
+  return Math.max(0,Math.floor((cod-new Date())/(1000*60*60*24)));
+}
+
+// ── F13+F12: INLINE EDIT — debounced, optimistic revert ──────
+function makeEditable(val, apiPath, field, type, opts, onSave) {
+  const id = `ed_${Math.random().toString(36).slice(2,8)}`;
+  if (type==='select') {
+    const op=(opts||[]).map(o=>`<option${o===val?' selected':''}>${o}</option>`).join('');
+    return `<select class="editable" id="${id}" data-prev="${String(val??'')}"
+      onchange="saveEdit('${id}','${apiPath}','${field}','${onSave||''}')">${op}</select>`;
+  }
+  return `<input class="editable" id="${id}" type="${type||'text'}" value="${String(val??'')}" data-prev="${String(val??'')}"
+    onblur="debouncedSave('${id}','${apiPath}','${field}','${onSave||''}')"
+    onkeydown="if(event.key==='Enter')this.blur()">`;
+}
+
+const _debouncedSaveMap = {};
+function debouncedSave(elId, apiPath, field, onSaveFn) {
+  if (!_debouncedSaveMap[elId]) {
+    _debouncedSaveMap[elId] = debounce((a,b,c,d)=>saveEdit(a,b,c,d), 400);
+  }
+  _debouncedSaveMap[elId](elId, apiPath, field, onSaveFn);
+}
+
+async function saveEdit(elId, apiPath, field, onSaveFn) {
+  const el = document.getElementById(elId); if (!el) return;
+  const raw   = el.value;
+  const prev  = el.getAttribute('data-prev'); // F13: store previous for revert
+  const val   = (isNaN(raw)||raw==='') ? raw : parseFloat(raw);
+  el.classList.add('saving'); el.classList.remove('save-err');
+  try {
+    await PUT(apiPath, { [field]: val });
+    el.setAttribute('data-prev', raw); // update stored prev to new value
+    toast('Saved ✓');
+    if (onSaveFn && window[onSaveFn]) window[onSaveFn]();
+    refreshNavBadges();
+  } catch(e) {
+    el.value = prev; // F13: revert to previous value on error
+    el.classList.add('save-err');
+    setTimeout(()=>el.classList.remove('save-err'), 2000);
+    toast('Save failed: '+e.message, 'err');
+  } finally { el.classList.remove('saving'); }
+}
+
+// ── MODAL ────────────────────────────────────────────────────
+function openModal(title,fields,cb) {
+  document.getElementById('modalTitle').textContent=title;
+  document.getElementById('modalFields').innerHTML=fields.map(f=>`
+    <div class="modal-field"><div class="modal-label">${f.label}</div>
+    ${f.type==='select'?`<select class="modal-input" id="mf_${f.key}">${(f.opts||[]).map(o=>`<option>${o}</option>`).join('')}</select>`:`<input class="modal-input" id="mf_${f.key}" type="${f.type||'text'}" value="${f.default||''}" placeholder="${f.placeholder||''}">`}
+    </div>`).join('');
+  modalCb={fields,cb}; document.getElementById('modalOverlay').classList.add('open');
+}
+function closeModal(){document.getElementById('modalOverlay').classList.remove('open');modalCb=null;}
+function submitModal(){
+  if(!modalCb)return;
+  const v={};
+  modalCb.fields.forEach(f=>{const el=document.getElementById('mf_'+f.key);v[f.key]=el?(f.type==='number'?parseFloat(el.value)||0:el.value):'';});
+  modalCb.cb(v);closeModal();
+}
+
+// ── F6: COMMENTS ─────────────────────────────────────────────
+function openComments(entityType, entityId, label) {
+  _commentCtx = { entityType, entityId };
+  document.getElementById('commentsTitle').textContent = `Comments — ${label}`;
+  document.getElementById('commentInput').value = '';
+  loadComments();
+  document.getElementById('commentsModal').classList.add('open');
+}
+function closeCommentsModal() { document.getElementById('commentsModal').classList.remove('open'); }
+async function loadComments() {
+  try {
+    const rows = await GET(`/comments?entityType=${_commentCtx.entityType}&entityId=${_commentCtx.entityId}`);
+    const body = document.getElementById('commentsBody');
+    if (!rows.length) { body.innerHTML = emptyState('No comments yet', 'Be the first to add one'); return; }
+    body.innerHTML = rows.map(r=>`
+      <div class="comment-item">
+        <div class="comment-meta">${r.author} · ${r.timestamp}</div>
+        <div class="comment-text">${r.comment}</div>
+        <button class="btn btn-sm btn-danger" style="margin-top:4px" onclick="deleteComment(${r.id})">Delete</button>
+      </div>`).join('');
+  } catch(e) { toast('Could not load comments','err'); }
+}
+async function submitComment() {
+  const text = document.getElementById('commentInput').value.trim();
+  if (!text) return;
+  try {
+    await POST('/comments', { entityType:_commentCtx.entityType, entityId:_commentCtx.entityId, comment:text, author: localStorage.getItem('psa_author')||'User' });
+    document.getElementById('commentInput').value = '';
+    loadComments(); toast('Comment added ✓');
+  } catch(e) { toast('Error: '+e.message,'err'); }
+}
+async function deleteComment(id) {
+  try { await DELETE(`/comments/${id}`); loadComments(); toast('Comment deleted'); }
+  catch(e) { toast('Error: '+e.message,'err'); }
+}
+function commentBtn(entityType, entityId, label) {
+  return `<button class="btn btn-sm btn-ghost" style="padding:2px 5px" onclick="openComments('${entityType}','${entityId}','${label}')" title="Comments">💬</button>`;
+}
+
+// ── F7: CSV IMPORT ───────────────────────────────────────────
+function openCSVModal() { document.getElementById('csvModal').classList.add('open'); }
+function closeCSVModal() { document.getElementById('csvModal').classList.remove('open'); }
+function setCSVTab(tab) {
+  _csvTab = tab;
+  ['monthly','generation','ld'].forEach((t,i)=>document.getElementById(`csvTab${i+1}`).classList.toggle('active',t===tab));
+  const hints={monthly:'Plant, Jul, Aug, Sep, Oct, Nov, Dec, Jan, Feb, Mar',generation:'Plant, Jul, Aug, Sep (MU)',ld:'Plant, AnnualMSG, YTDActual, LDRate'};
+  document.getElementById('csvHint').textContent = hints[tab];
+}
+function handleCSVDrop(e){e.preventDefault();document.getElementById('csvDropArea').classList.remove('drag-over');const f=e.dataTransfer.files[0];if(f)readCSVFile(f);}
+function handleCSVFile(inp){if(inp.files[0])readCSVFile(inp.files[0]);}
+function readCSVFile(f){const r=new FileReader();r.onload=e=>{document.getElementById('csvPaste').value=e.target.result;};r.readAsText(f);}
+async function importCSV() {
+  const text = document.getElementById('csvPaste').value.trim();
+  if (!text) { toast('No data to import','warn'); return; }
+  const rows   = text.split('\n').map(r=>r.split(',').map(c=>c.trim()));
+  const months = ['jul','aug','sep','oct','nov','dec','jan','feb','mar'];
+  let count = 0;
+  try {
+    if (_csvTab==='monthly') {
+      for (const r of rows) {
+        if (!r[0]||r[0].toLowerCase()==='plant') continue;
+        const ex = (STATE.revMonthly||[]).find(p=>p.plant.toLowerCase().includes(r[0].toLowerCase()));
+        if (!ex) continue;
+        const body={}; months.forEach((m,i)=>{if(r[i+1]!==undefined)body[m]=parseFloat(r[i+1])||0;});
+        await PUT(`/revenue/monthly/${ex.id}`,body); count++;
+      }
+      if(currentPage==='revenue'){const m=await GET(`/revenue/monthly?projectId=${PROJECT_ID}`);STATE.revMonthly=m;renderRevTable(m);refreshRevCharts();}
+    } else if (_csvTab==='generation') {
+      for (const r of rows) {
+        if (!r[0]||r[0].toLowerCase()==='plant') continue;
+        const ex=(STATE.volGeneration||[]).find(p=>p.plant.toLowerCase().includes(r[0].toLowerCase()));
+        if (!ex) continue;
+        const body={}; months.forEach((m,i)=>{if(r[i+1]!==undefined)body[m]=parseFloat(r[i+1])||null;});
+        await PUT(`/volume/generation/${ex.id}`,body); count++;
+      }
+      if(currentPage==='volume'){const g=await GET(`/volume/generation?projectId=${PROJECT_ID}`);STATE.volGeneration=g;refreshVolCharts();}
+    } else {
+      for (const r of rows) {
+        if (!r[0]||r[0].toLowerCase()==='plant') continue;
+        const ex=(STATE.volLD||[]).find(p=>p.plant.toLowerCase().includes(r[0].toLowerCase()));
+        if (!ex) continue;
+        const body={annualMSG:parseFloat(r[1])||ex.annualMSG,ytdActual:parseFloat(r[2])||0};
+        if(r[3])body.ldRate=parseFloat(r[3]);
+        await PUT(`/volume/ld/${ex.id}`,body); count++;
+      }
+      if(currentPage==='volume'){const ld=await GET(`/volume/ld/calculated?projectId=${PROJECT_ID}`);STATE.volLD=ld;renderLDTable(ld);}
+    }
+    toast(`Imported ${count} row${count!==1?'s':''} ✓`); closeCSVModal();
+  } catch(e) { toast('Import error: '+e.message,'err'); }
+}
+
+// ── HISTORY PANEL ────────────────────────────────────────────
+async function openHistory() {
+  try {
+    const rows = await GET(`/history?projectId=${PROJECT_ID}&limit=100`);
+    document.getElementById('histBody').innerHTML = rows.length
+      ? rows.map(h=>`<div class="history-item"><div class="history-time">${h.timestamp} · ${h.author}</div><div class="history-field">${h.field}</div><div style="display:flex;align-items:center;gap:6px;font-size:11px"><span class="history-old">${h.oldVal||'—'}</span><span style="color:var(--text-muted)">→</span><span class="history-new">${h.newVal||'—'}</span></div></div>`).join('')
+      : emptyState('No changes recorded yet','Edit any field to start tracking history');
+    document.getElementById('histOverlay').classList.add('open');
+    document.getElementById('histPanel').classList.add('open');
+  } catch(e) { toast('Could not load history','err'); }
+}
+function closeHistory(){document.getElementById('histOverlay').classList.remove('open');document.getElementById('histPanel').classList.remove('open');}
+
+// ── EXPORT ───────────────────────────────────────────────────
+function exportJSON() {
+  const blob=new Blob([JSON.stringify(STATE,null,2)],{type:'application/json'});
+  const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=`psa_export_${new Date().toISOString().slice(0,10)}.json`;a.click();
+  toast('Exported ✓');
+}
+
+// ── F10: EMAIL REPORT — pre-loads all data ───────────────────
+async function generateReport() {
+  setLoading(true);
+  try {
+    // Ensure all data is loaded before generating
+    const [risks, compliance, milestones, alerts] = await Promise.all([
+      STATE.risks?.length    ? Promise.resolve(STATE.risks)      : GET(`/risks?projectId=${PROJECT_ID}`),
+      STATE.compliance?.length?Promise.resolve(STATE.compliance) : GET(`/compliance?projectId=${PROJECT_ID}`),
+      STATE.milestones?.length?Promise.resolve(STATE.milestones) : GET(`/milestones?projectId=${PROJECT_ID}`),
+      STATE.alerts?.length   ? Promise.resolve(STATE.alerts)     : GET(`/alerts?projectId=${PROJECT_ID}`)
+    ]);
+    STATE.risks=risks; STATE.compliance=compliance; STATE.milestones=milestones; STATE.alerts=alerts;
+    const p   = STATE.project||{};
+    const crit= alerts.filter(a=>a.priority==='Critical'&&a.status==='Open');
+    const atR = compliance.filter(c=>c.status==='At Risk');
+    const wors= risks.filter(r=>r.trend==='Worsening');
+    const days= getDaysToCoD();
+    const rpt =
+`PSA STATUS REPORT — ${(p.client||'').toUpperCase()}
+Generated : ${new Date().toLocaleDateString('en-IN')}  |  Portal v2.0
+${'═'.repeat(55)}
+
+EXECUTIVE SUMMARY
+Project   : ${p.name||'—'}
+Capacity  : ${p.totalMW||'—'} MW  |  ${p.technology||'—'}
+PSA Term  : ${p.psaTerm||'—'} years  |  Tariff: ₹${p.blendedTariff||'—'}/kWh
+Revenue   : ₹${p.annualRevBudget||'—'} Cr/yr  |  Lifetime ₹${p.lifetimeRev||'—'} Cr
+COD Status: ${p.status||'—'}  —  ${days>0?days+' days to target COD':'COD date passed'}
+Compliance: ${p.complianceScore||'—'}%
+
+${'─'.repeat(55)}
+CRITICAL ALERTS  (${crit.length} open)
+${crit.map(a=>`► ${a.alertId} | ${a.category}\n  Action : ${a.actionRequired}\n  Owner  : ${a.owner}  |  Due: ${a.targetDate}`).join('\n\n')||'None'}
+
+${'─'.repeat(55)}
+COMPLIANCE AT RISK  (${atR.length} items)
+${atR.map(c=>`► ${c.refId} | ${c.area}  Score: ${c.score}%\n  Action : ${c.action}`).join('\n\n')||'None'}
+
+${'─'.repeat(55)}
+WORSENING RISKS  (${wors.length} items)
+${wors.map(r=>`► ${r.riskId} | ${r.category}  Score: ${r.score||'—'}`).join('\n')||'None'}
+
+${'─'.repeat(55)}
+PLANT STATUS
+${(STATE.plants||[]).map(pl=>`${pl.plantId}  ${pl.name}  |  ${pl.technology}  |  ${pl.mw} MW  |  COD: ${pl.codTarget}  |  ${pl.status}`).join('\n')}
+
+${'─'.repeat(55)}
+MILESTONE SUMMARY
+Completed : ${milestones.filter(m=>m.status==='Completed').length}
+In Progress: ${milestones.filter(m=>m.status==='In Progress').length}
+At Risk   : ${milestones.filter(m=>m.status==='At Risk').length}
+${'═'.repeat(55)}
+[Generated by PSA Analytics Portal v2.0 — Author: ${localStorage.getItem('psa_author')||'User'}]`;
+    document.getElementById('reportContent').value=rpt;
+    document.getElementById('reportModal').classList.add('open');
+  } catch(e) { toast('Could not generate report: '+e.message,'err'); }
+  finally { setLoading(false); }
+}
+function closeReportModal(){document.getElementById('reportModal').classList.remove('open');}
+function copyReport(){navigator.clipboard.writeText(document.getElementById('reportContent').value);toast('Copied to clipboard ✓');}
+
+// ── F9: PROJECT SWITCHER ─────────────────────────────────────
+function buildProjectSwitcher(projects) {
+  const wrap   = document.getElementById('projectSwitcherWrap');
+  const select = document.getElementById('projectSwitcher');
+  if (!projects||projects.length<=1) { wrap.style.display='none'; return; }
+  wrap.style.display = 'block';
+  select.innerHTML   = projects.map(p=>`<option value="${p.projectId}"${p.projectId===PROJECT_ID?' selected':''}>${p.name}</option>`).join('');
+}
+async function switchProject(newId) {
+  PROJECT_ID = newId;
+  STATE = { projects: STATE.projects, plants: (STATE.plants||[]).filter(p=>p.projectId===newId) };
+  toast(`Switched to ${newId}`, 'ok', 1500);
+  await showPage('dashboard');
+}
+
+// ── F1: DYNAMIC SIDEBAR BADGES ───────────────────────────────
+function getDynamicBadge(pageId) {
+  switch(pageId) {
+    case 'risks': {
+      const w=(STATE.risks||[]).filter(r=>r.trend==='Worsening').length;
+      const h=(STATE.risks||[]).filter(r=>r.severity==='High'||r.severity==='Critical').length;
+      if(w>0) return {text:w+'↓ Wors.',cls:'nb-red'};
+      if(h>0) return {text:h+' High',cls:'nb-amber'};
+      return null;
+    }
+    case 'compliance': {
+      const a=(STATE.compliance||[]).filter(c=>c.status==='At Risk').length;
+      const p=(STATE.compliance||[]).filter(c=>c.status==='Pending').length;
+      if(a>0) return {text:a+' At Risk',cls:'nb-red'};
+      if(p>0) return {text:p+' Pending',cls:'nb-amber'};
+      return null;
+    }
+    case 'alerts': {
+      const c=(STATE.alerts||[]).filter(a=>a.priority==='Critical'&&a.status==='Open').length;
+      const h=(STATE.alerts||[]).filter(a=>a.priority==='High'&&a.status==='Open').length;
+      if(c>0) return {text:c+' Critical',cls:'nb-red'};
+      if(h>0) return {text:h+' High',cls:'nb-amber'};
+      return null;
+    }
+    case 'milestones': {
+      const a=(STATE.milestones||[]).filter(m=>m.status==='At Risk').length;
+      if(a>0) return {text:a+' At Risk',cls:'nb-amber'};
+      return null;
+    }
+    case 'postcod': {
+      const c=(STATE.postcod||[]).filter(p=>p.priority==='Critical').length;
+      if(c>0) return {text:c+' Crit.',cls:'nb-red'};
+      return null;
+    }
+    default: return null;
+  }
+}
+
+const sheetPages = [
+  {id:'dashboard', label:'Dashboard',       icon:'M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z'},
+  {id:'volume',    label:'Volume & MSG',     icon:'M22 12h-4l-3 9L9 3l-3 9H2'},
+  {id:'revenue',   label:'Revenue Tracker',  icon:'M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6'},
+  {id:'risks',     label:'Commercial Risks', icon:'M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z'},
+  {id:'compliance',label:'Regulatory',       icon:'M9 11l3 3L22 4'},
+  {id:'postcod',   label:'Post COD',         icon:'M8 6h13M8 12h13M8 18h13M3 6h.01M3 12h.01M3 18h.01'},
+  {id:'milestones',label:'PSA Milestones',   icon:'M17 3a2.828 2.828 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5L17 3z'},
+  {id:'alerts',    label:'Alerts & Actions', icon:'M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9'}
+];
+
+function buildSheetNav() {
+  const nav=document.getElementById('sidebarNav');
+  nav.innerHTML='<div class="nav-section-label">Pages</div>';
+  sheetPages.forEach(p=>{
+    const badge=getDynamicBadge(p.id);
+    const d=document.createElement('div');
+    d.className='nav-item'+(p.id===currentPage?' active':'');
+    d.setAttribute('data-page',p.id); d.onclick=()=>showPage(p.id);
+    d.innerHTML=`<svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="${p.icon}"/></svg><span class="nav-label">${p.label}</span>${badge?`<span class="nav-badge ${badge.cls}">${badge.text}</span>`:''}`;
+    nav.appendChild(d);
+  });
+}
+
+function buildProjectNav() {
+  const nav=document.getElementById('sidebarNav'); nav.innerHTML='';
+  (STATE.projects||[]).forEach(proj=>{
+    nav.innerHTML+=`<div class="nav-section-label">${proj.name}</div>`;
+    const pn=document.createElement('div');pn.className='project-node parent';
+    pn.textContent='📋 PSA Overview';pn.onclick=()=>showProjectPage(proj.projectId,null);nav.appendChild(pn);
+    (STATE.plants||[]).filter(pl=>pl.projectId===proj.projectId).forEach(pl=>{
+      const n=document.createElement('div');n.className='project-node child';
+      n.innerHTML=`<span style="color:var(--brand);font-family:var(--mono);font-size:10px">${pl.plantId}</span>  ${pl.city}`;
+      n.onclick=()=>showProjectPage(proj.projectId,pl.plantId);nav.appendChild(n);
+    });
+  });
+}
+
+function setView(v){
+  currentView=v;
+  document.getElementById('btnSheet').classList.toggle('active',v==='sheet');
+  document.getElementById('btnProject').classList.toggle('active',v==='project');
+  v==='sheet'?buildSheetNav():buildProjectNav();
+}
+
+function refreshNavBadges(){ if(currentView==='sheet') buildSheetNav(); }
+
+// ── F8: WIDGET PANEL ─────────────────────────────────────────
+const WIDGET_DEFS = [
+  {id:'w-summary',  label:'Smart summary bar'},
+  {id:'w-countdown',label:'COD countdown'},
+  {id:'w-kpis',     label:'KPI cards strip'},
+  {id:'w-plants',   label:'Plant structure + Risk matrix'},
+  {id:'w-gauges',   label:'Gauge charts (3)'},
+  {id:'w-msgchart', label:'MSG achievement chart'},
+  {id:'w-comptiles',label:'Compliance score tiles'},
+  {id:'w-revprev',  label:'Revenue projection preview'}
+];
+let widgetOrder   = JSON.parse(localStorage.getItem('psa_widget_order')||'null') || WIDGET_DEFS.map(w=>w.id);
+let widgetVisible = JSON.parse(localStorage.getItem('psa_widget_vis')||'null')   || {};
+
+function openWidgetModal() {
+  const list = document.getElementById('widgetPanelList');
+  list.innerHTML = widgetOrder.map(wid=>{
+    const def = WIDGET_DEFS.find(d=>d.id===wid)||{id:wid,label:wid};
+    const on  = widgetVisible[wid]!==false;
+    return `<div class="widget-toggle" id="wr_${wid}" draggable="true" ondragstart="wDragStart(event,'${wid}')" ondragover="event.preventDefault()" ondrop="wDrop(event,'${wid}')">
+      <div class="widget-row"><span class="drag-handle" title="Drag to reorder">☰</span><span style="font-size:13px">${def.label}</span></div>
+      <div class="toggle-switch${on?' on':''}" onclick="toggleWidgetVis('${wid}',this)"></div>
+    </div>`;
+  }).join('');
+  document.getElementById('widgetModal').classList.add('open');
+}
+function closeWidgetModal(){document.getElementById('widgetModal').classList.remove('open');}
+function resetWidgets(){widgetOrder=WIDGET_DEFS.map(w=>w.id);widgetVisible={};localStorage.removeItem('psa_widget_order');localStorage.removeItem('psa_widget_vis');closeWidgetModal();if(currentPage==='dashboard')loadDashboard();toast('Widgets reset ✓');}
+function toggleWidgetVis(wid, el) {
+  const on = widgetVisible[wid]!==false;
+  widgetVisible[wid] = !on;
+  el.classList.toggle('on', !on);
+  localStorage.setItem('psa_widget_vis', JSON.stringify(widgetVisible));
+  const domEl = document.getElementById(wid);
+  if (domEl) domEl.style.display = !on?'':'none';
+}
+let _wDragId = null;
+function wDragStart(e, wid){_wDragId=wid;}
+function wDrop(e, targetId){
+  if (!_wDragId||_wDragId===targetId) return;
+  const from=widgetOrder.indexOf(_wDragId), to=widgetOrder.indexOf(targetId);
+  if(from<0||to<0) return;
+  widgetOrder.splice(from,1); widgetOrder.splice(to,0,_wDragId);
+  localStorage.setItem('psa_widget_order',JSON.stringify(widgetOrder));
+  openWidgetModal(); // re-render panel list
+}
+function applyWidgetVisibility(){
+  WIDGET_DEFS.forEach(w=>{
+    const el=document.getElementById(w.id);
+    if(el) el.style.display=(widgetVisible[w.id]===false)?'none':'';
+  });
+}
+
+// ── PAGE NAVIGATION ──────────────────────────────────────────
+const pageTitles={
+  dashboard:  ['Executive Dashboard',       'Captive Power Supply Agreement · Sanathan Textiles Limited'],
+  volume:     ['Volume & MSG Tracker',      'Minimum Supply Guarantee · FY 2025-26'],
+  revenue:    ['Revenue Tracker',           'Generation × Tariff × Billing × Collections'],
+  risks:      ['Commercial Risk Register',  'Multi-plant · Multi-state'],
+  compliance: ['Regulatory Compliance',     'CERC · MERC · KERC · RRERC · IEGC · EA 2003'],
+  postcod:    ['Post COD Tracker',          'Pre-COD · COD · MSG / Revenue · Regulatory'],
+  milestones: ['PSA Milestone Tracker',     '18 milestones · Pre-COD to termination clauses'],
+  alerts:     ['Alerts & Open Actions',     'Priority ranked · L1/L2/L3 escalation']
+};
+const pageLoaders={dashboard:loadDashboard,volume:loadVolume,revenue:loadRevenue,risks:loadRisks,compliance:loadCompliance,postcod:loadPostCOD,milestones:loadMilestones,alerts:loadAlerts};
+
+async function showPage(id){
+  document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+  document.getElementById('page-'+id).classList.add('active');
+  currentPage=id;
+  document.querySelectorAll('.nav-item').forEach(n=>n.classList.toggle('active',n.getAttribute('data-page')===id));
+  const t=pageTitles[id]||[id,''];
+  document.getElementById('topbarTitle').textContent=t[0];
+  document.getElementById('topbarSub').textContent=t[1];
+  document.getElementById('statusDot').className='status-dot'+(id==='alerts'?'':' green');
+  closeMobileSidebar();
+  if(pageLoaders[id]){setLoading(true);try{await pageLoaders[id]();}finally{setLoading(false);}}
+}
+
+function rebuildCurrentCharts(){chartDefaults();if(pageLoaders[currentPage])pageLoaders[currentPage]();}
+
+// ── F5: PROJECT VIEW with data freshness fix ──────────────────
+async function showProjectPage(projId, plantId){
+  document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+  document.getElementById('page-project').classList.add('active');
+  currentPage='project';
+  const proj  =(STATE.projects||[]).find(p=>p.projectId===projId);
+  const plants=(STATE.plants||[]).filter(p=>p.projectId===projId);
+
+  // F5: Ensure milestones and risks are loaded
+  if(!STATE.milestones?.length){setLoading(true);try{STATE.milestones=await GET(`/milestones?projectId=${PROJECT_ID}`);}finally{setLoading(false);}}
+  if(!STATE.risks?.length){setLoading(true);try{STATE.risks=await GET(`/risks?projectId=${PROJECT_ID}`);}finally{setLoading(false);}}
+
+  if(!plantId){
+    document.getElementById('projTitle').textContent=proj?.name||projId;
+    document.getElementById('projSub').textContent=`${proj?.client||''} · ${proj?.totalMW||0} MW · ${proj?.technology||''}`;
+    document.getElementById('topbarTitle').textContent=proj?.name||projId;
+    document.getElementById('topbarSub').textContent=proj?.client||'';
+    document.getElementById('projContent').innerHTML=`
+      <div class="kpi-grid">${[
+        {l:'Total MW',v:`${proj?.totalMW||0} MW`},{l:'Tariff',v:`₹${proj?.blendedTariff||0}`,s:'/kWh'},
+        {l:'Annual MSG',v:`${proj?.annualMSG||0} MU`},{l:'Annual Rev',v:`₹${proj?.annualRevBudget||0} Cr`},
+        {l:'Lifetime Rev',v:`₹${proj?.lifetimeRev||0} Cr`},{l:'NPV @8%',v:`₹${proj?.npv8||0} Cr`},
+        {l:'Status',v:`<span class="badge badge-precod">${proj?.status||'—'}</span>`}
+      ].map(k=>`<div class="kpi-card"><div class="kpi-label">${k.l}</div><div class="kpi-value">${k.v}</div><div class="kpi-sub">${k.s||''}</div></div>`).join('')}</div>
+      <div class="plant-grid">${plants.map(pl=>`
+        <div class="plant-card" onclick="showProjectPage('${projId}','${pl.plantId}')" style="cursor:pointer">
+          <div class="plant-card-id">${pl.plantId}</div><div class="plant-card-name">${pl.name}</div>
+          <div class="plant-card-tech">${pl.technology} · ${pl.city}</div>
+          <div style="display:flex;justify-content:flex-end;margin-bottom:8px">${sBadge(pl.status)}</div>
+          <div class="plant-row"><span class="plant-row-label">Capacity</span><span class="plant-row-value">${pl.mw} MW</span></div>
+          <div class="plant-row"><span class="plant-row-label">Tariff</span><span class="plant-row-value">₹${pl.tariff}/kWh</span></div>
+          <div class="plant-row"><span class="plant-row-label">COD target</span><span class="plant-row-value">${pl.codTarget}</span></div>
+          <div class="plant-row"><span class="plant-row-label">Plant MSG</span><span class="plant-row-value">${pl.plantMSG} MU</span></div>
+        </div>`).join('')}</div>`;
+  } else {
+    const pl=plants.find(p=>p.plantId===plantId);
+    document.getElementById('projTitle').textContent=`${pl?.plantId} — ${pl?.name}`;
+    document.getElementById('projSub').textContent=`${pl?.technology} · ${pl?.city}, ${pl?.state} · ${pl?.mw} MW`;
+    document.getElementById('topbarTitle').textContent=pl?.plantId||plantId;
+    document.getElementById('topbarSub').textContent=`${pl?.technology} · ${pl?.city}, ${pl?.state}`;
+    const relMS   =(STATE.milestones||[]).filter(m=>m.plantId===pl?.plantId||m.plantId==='All Plants').slice(0,6);
+    const relRisks=(STATE.risks||[]).slice(0,4);
+    document.getElementById('projContent').innerHTML=`
+      <div class="kpi-grid">${[
+        {l:'Capacity',v:`${pl?.mw||0} MW`,s:pl?.technology},{l:'AC MW',v:`${pl?.acMW||0} MW`},
+        {l:'Tariff',v:`₹${pl?.tariff||0}`,s:'/kWh Fixed'},{l:'Plant MSG',v:`${pl?.plantMSG||0} MU`,s:'/year'},
+        {l:'COD target',v:pl?.codTarget||'—'},{l:'Status',v:`<span class="badge badge-precod">${pl?.status||'—'}</span>`}
+      ].map(k=>`<div class="kpi-card"><div class="kpi-label">${k.l}</div><div class="kpi-value">${k.v}</div><div class="kpi-sub">${k.s||''}</div></div>`).join('')}</div>
+      <div class="grid-2">
+        <div class="card"><div class="card-header"><div class="card-title">Relevant milestones</div></div>
+          <div class="card-body np"><table><thead><tr><th>ID</th><th>Description</th><th>%</th><th>Status</th><th>Due</th></tr></thead>
+          <tbody>${relMS.length?relMS.map(m=>`<tr><td><b>${m.msId}</b></td><td style="font-size:11px;max-width:180px">${(m.description||'').substring(0,55)}…</td><td>${m.pctComplete||0}%</td><td>${sBadge(m.status)}</td><td style="font-size:11px">${m.dueBy||'—'}</td></tr>`).join(''):
+          `<tr><td colspan="5">${emptyState('No milestones found','')}</td></tr>`}</tbody></table></div></div>
+        <div class="card"><div class="card-header"><div class="card-title">Active risks</div></div>
+          <div class="card-body np"><table><thead><tr><th>ID</th><th>Category</th><th>Score</th><th>Trend</th></tr></thead>
+          <tbody>${relRisks.length?relRisks.map(r=>`<tr><td><b>${r.riskId}</b></td><td>${r.category}</td><td><b>${r.score||'—'}</b></td><td class="trend-${r.trend==='Worsening'?'down':'stable'}">${r.trend||'—'}</td></tr>`).join(''):
+          `<tr><td colspan="4">${emptyState('No risks found','')}</td></tr>`}</tbody></table></div></div>
+      </div>`;
+  }
+}
+
+// ── SEARCH ───────────────────────────────────────────────────
+function handleSearch(q){
+  const box=document.getElementById('searchResults');
+  if(!q||q.length<2){box.classList.remove('open');return;}
+  const idx=[];
+  (STATE.risks||[]).forEach(r=>idx.push({text:`${r.riskId} ${r.category} ${r.description}`,label:`${r.riskId}: ${r.category}`,type:'Risk',page:'risks'}));
+  (STATE.compliance||[]).forEach(c=>idx.push({text:`${c.refId} ${c.area} ${c.action}`,label:`${c.refId}: ${c.area}`,type:'Compliance',page:'compliance'}));
+  (STATE.milestones||[]).forEach(m=>idx.push({text:`${m.msId} ${m.category} ${m.description}`,label:`${m.msId}: ${m.category}`,type:'Milestone',page:'milestones'}));
+  (STATE.alerts||[]).forEach(a=>idx.push({text:`${a.alertId} ${a.category} ${a.description}`,label:`${a.alertId}: ${a.category}`,type:'Alert',page:'alerts'}));
+  (STATE.postcod||[]).forEach(p=>idx.push({text:`${p.pcId} ${p.category} ${p.description}`,label:`${p.pcId}: ${p.category}`,type:'PostCOD',page:'postcod'}));
+  const results=idx.filter(i=>i.text.toLowerCase().includes(q.toLowerCase())).slice(0,8);
+  if(!results.length){box.innerHTML='<div class="sr-item" style="color:var(--text-muted)">No results</div>';}
+  else{box.innerHTML=results.map(r=>`<div class="sr-item" onclick="showPage('${r.page}');closeSearch()"><span>${r.label}</span><span class="sr-type">${r.type}</span></div>`).join('');}
+  box.classList.add('open');
+}
+function closeSearch(){document.getElementById('searchResults').classList.remove('open');}
+</script>
+<script>
+// ═══════════════════════════════════════════════════════════
+// DASHBOARD
+// ═══════════════════════════════════════════════════════════
+async function loadDashboard() {
+  chartDefaults();
+  const data = await GET(`/dashboard?projectId=${PROJECT_ID}`);
+  STATE.project            = data.project;
+  STATE.plants             = data.plants;
+  STATE.complianceSnapshot = data.complianceSnapshot;
+  STATE.criticalAlerts     = data.criticalAlerts;
+  STATE.msgAchievement     = data.msgAchievement;
+  STATE.revenueProjection  = data.revenueProjection;
+
+  const days=getDaysToCoD(), p=data.project;
+  document.getElementById('smartText').innerHTML=
+    `<strong>${data.criticalAlerts.length} critical alert${data.criticalAlerts.length!==1?'s':''} open</strong> &nbsp;·&nbsp;
+     <strong style="color:${days<60?'var(--red)':'var(--brand)'}">COD in ${days} days</strong> &nbsp;·&nbsp;
+     <strong>Compliance ${data.kpis.avgComplianceScore}%</strong> &nbsp;·&nbsp;
+     <strong>${data.kpis.worseningRisks} risk${data.kpis.worseningRisks!==1?'s':''} worsening</strong> &nbsp;·&nbsp;
+     <strong>${data.kpis.atRiskCompliance} compliance item${data.kpis.atRiskCompliance!==1?'s':''} at risk</strong>
+     &nbsp;·&nbsp;<span style="color:var(--text-muted)">Pre-COD · ₹${p?.annualRevBudget||67} Cr/yr</span>`;
+
+  const months=Math.floor(days/30.44),weeks=Math.floor((days%30.44)/7),rem=days%7;
+  const urgent=days<60,clr=urgent?'var(--red)':'var(--brand)';
+  document.getElementById('codCountdown').innerHTML=`
+    <div><div class="cod-lbl">Solar COD countdown — PLT-01</div>
+    <div class="cod-units">
+      <div class="cod-unit"><div class="cod-num" style="color:${clr}">${months}</div><div class="cod-ulbl">Months</div></div>
+      <div class="cod-unit"><div class="cod-num" style="color:${clr}">${weeks}</div><div class="cod-ulbl">Weeks</div></div>
+      <div class="cod-unit"><div class="cod-num" style="color:${clr}">${rem}</div><div class="cod-ulbl">Days</div></div>
+    </div></div>
+    <div class="cod-divider"></div>
+    <div class="cod-info">
+      <div class="cod-title" style="color:${urgent?'var(--red)':'var(--text-primary)'}">Target: 30 June 2026${urgent?' ⚠ Urgent':''}</div>
+      <div class="cod-sub">PLT-01 Solar Fatehgarh · 21 MWp · Rajasthan</div>
+      <div class="cod-sub" style="margin-top:3px">PLT-02 Solar: 31 Dec 2026 · PLT-03 Wind: 30 Jun 2027</div>
+    </div>
+    <div><span class="badge ${urgent?'badge-critical':'badge-precod'}">${days} days to COD</span></div>`;
+
+  const kpiDefs=[
+    {l:'Total capacity',v:p?.totalMW||0,suf:' MW',s:p?.technology||''},
+    {l:'Blended tariff',v:`₹${p?.blendedTariff||0}`,s:'/kWh · Fixed 25yr',raw:true},
+    {l:'Annual MSG',v:p?.annualMSG||0,suf:' MU',s:'Min supply guarantee'},
+    {l:'Annual rev',v:p?.annualRevBudget||0,pre:'₹',suf:' Cr',s:'FY 2026-27'},
+    {l:'Lifetime rev',v:p?.lifetimeRev||0,pre:'₹',suf:' Cr',s:'25-year PSA'},
+    {l:'NPV @ 8%',v:p?.npv8||0,pre:'₹',suf:' Cr'},
+    {l:'Compliance',v:parseFloat(data.kpis.avgComplianceScore)||0,suf:'%',s:'Avg score'},
+    {l:'PSA status',v:`<span class="badge badge-precod">${p?.status||'—'}</span>`,s:'COD: '+p?.codDate,raw:true}
+  ];
+  document.getElementById('dashKPIs').innerHTML=kpiDefs.map((k,i)=>
+    `<div class="kpi-card"><div class="kpi-label">${k.l}</div><div class="kpi-value" id="kv${i}">${k.raw?k.v:(k.pre||'')+(k.v)+(k.suf||'')}</div><div class="kpi-sub">${k.s||''}</div></div>`
+  ).join('');
+  kpiDefs.forEach((k,i)=>{if(!k.raw&&typeof k.v==='number'){const el=document.getElementById('kv'+i);if(el)animateCount(el,k.v,k.pre||'',k.suf||'');}});
+
+  document.getElementById('plantCards').innerHTML=data.plants.length
+    ? data.plants.map(pl=>`
+        <div class="plant-card">
+          <div class="plant-card-id">${pl.plantId}</div>
+          <div class="plant-card-name">${pl.technology} · ${pl.city}</div>
+          <div class="plant-card-tech" style="margin-bottom:8px">${pl.state}</div>
+          <div style="display:flex;justify-content:flex-end;margin-bottom:8px">${sBadge(pl.status)}</div>
+          <div class="plant-row"><span class="plant-row-label">Capacity</span><span class="plant-row-value">${pl.mw} MW</span></div>
+          <div class="plant-row"><span class="plant-row-label">Tariff</span><span class="plant-row-value">₹${pl.tariff}/kWh</span></div>
+          <div class="plant-row"><span class="plant-row-label">COD target</span><span class="plant-row-value">${pl.codTarget}</span></div>
+          <div class="plant-row"><span class="plant-row-label">Plant MSG</span><span class="plant-row-value">${pl.plantMSG} MU</span></div>
+        </div>`).join('')
+    : emptyState('No plants configured','Add plants in the project settings');
+
+  document.getElementById('rmC').textContent=data.riskSummary?.critical||0;
+  document.getElementById('rmH').textContent=data.riskSummary?.high||0;
+  document.getElementById('rmM').textContent=data.riskSummary?.medium||0;
+  document.getElementById('rmL').textContent=data.riskSummary?.low||0;
+
+  document.getElementById('dashAlerts').innerHTML=data.criticalAlerts.length
+    ? data.criticalAlerts.map(a=>`
+        <div style="display:flex;align-items:center;gap:8px;padding:6px 0;border-bottom:1px solid var(--border)">
+          <span class="rag rag-red"></span>
+          <span class="badge badge-critical" style="flex-shrink:0">${a.alertId}</span>
+          <span style="font-size:11px;flex:1">${a.category}</span>
+          <span style="font-size:10px;color:var(--text-muted)">${a.targetDate}</span>
+        </div>`).join('')
+    : '<div style="font-size:12px;color:var(--text-muted);padding:8px 0">No critical alerts ✓</div>';
+
+  // F4: Compliance snapshot tiles — inline edit enabled
+  document.getElementById('compTiles').innerHTML=data.complianceSnapshot.map(c=>{
+    const clr=c.score>=90?'var(--green)':c.score>=70?'var(--amber)':'var(--red)';
+    return `<div class="compliance-tile">
+      <div class="compliance-tile-label">${c.area}</div>
+      ${sBadge(c.status)} ${ragDot('compliance',c.score)}
+      <div class="compliance-tile-score" style="color:${clr}">${c.score}%</div>
+      <div class="progress-wrap"><div class="progress-fill" style="width:${c.score}%;background:${clr}"></div></div>
+      <div style="display:flex;gap:4px;margin-top:6px;flex-wrap:wrap">
+        ${makeEditable(c.score,`/compliance/snapshot/${c.id}`,'score','number','','loadDashboard')}
+        ${makeEditable(c.status,`/compliance/snapshot/${c.id}`,'status','select',['Compliant','At Risk','Pending','Continuous'],'loadDashboard')}
+      </div>
+    </div>`;
+  }).join('');
+
+  const risks=await GET(`/risks?projectId=${PROJECT_ID}`); STATE.risks=risks;
+  const avgComp=parseFloat(data.kpis.avgComplianceScore)||0;
+  const msgData=data.msgAchievement||[];
+  const avgMSG=msgData.length?msgData.reduce((s,m)=>{const a=m.annualMSG>0?((m.ytdActual/m.annualMSG)*100):0;return s+a;},0)/msgData.length:0;
+  const validR=risks.filter(r=>r.score!=null);
+  const avgRisk=validR.length?validR.reduce((s,r)=>s+(r.score||0),0)/validR.length:0;
+
+  setTimeout(()=>{
+    drawGauge('gaugeC',avgComp,'#48a1c7');
+    drawGauge('gaugeM',avgMSG,'#d29922');
+    drawGauge('gaugeR',100-((avgRisk/10)*100),'#3fb950');
+    document.getElementById('gCV').textContent=avgComp.toFixed(1)+'%';
+    document.getElementById('gMV').textContent=avgMSG.toFixed(1)+'%';
+    document.getElementById('gRV').textContent=avgRisk.toFixed(1);
+  },100);
+
+  dC('chartMSG');
+  const msgVals=msgData.map(m=>m.annualMSG>0?parseFloat(((m.ytdActual/m.annualMSG)*100).toFixed(1)):0);
+  charts['chartMSG']=new Chart(document.getElementById('chartMSG').getContext('2d'),{
+    type:'bar',
+    data:{labels:msgData.map(m=>m.plant),datasets:[{label:'MSG achieved (%)',data:msgVals,
+      backgroundColor:msgVals.map(v=>v>=95?'rgba(63,185,80,0.7)':v>=50?'rgba(210,153,34,0.7)':'rgba(248,81,73,0.7)'),
+      borderRadius:4,borderSkipped:false}]},
+    options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},
+      scales:{y:{beginAtZero:true,max:120,ticks:{callback:v=>v+'%'},grid:{color:gc()}},x:{grid:{display:false}}}}
+  });
+
+  dC('chartRevPrev');
+  const rvc=['rgba(72,161,199,0.8)','rgba(63,185,80,0.8)','rgba(210,153,34,0.8)'];
+  document.getElementById('revLeg').innerHTML=['PLT-01 Karnataka','PLT-02 Maharashtra','PLT-03 Rajasthan'].map((l,i)=>
+    `<div class="legend-item"><div class="legend-dot" style="background:${rvc[i]}"></div>${l}</div>`).join('');
+  charts['chartRevPrev']=new Chart(document.getElementById('chartRevPrev').getContext('2d'),{
+    type:'bar',
+    data:{labels:data.revenueProjection.map(d=>d.fy),datasets:[
+      {label:'PLT-01',data:data.revenueProjection.map(d=>d.plt01),backgroundColor:rvc[0],borderRadius:2},
+      {label:'PLT-02',data:data.revenueProjection.map(d=>d.plt02),backgroundColor:rvc[1],borderRadius:2},
+      {label:'PLT-03',data:data.revenueProjection.map(d=>d.plt03),backgroundColor:rvc[2],borderRadius:2}
+    ]},
+    options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},
+      scales:{x:{stacked:true,grid:{display:false}},y:{stacked:true,ticks:{callback:v=>'₹'+v},grid:{color:gc()}}}}
+  });
+
+  applyWidgetVisibility();
+  refreshNavBadges();
+  document.getElementById('lastUpdated').textContent='Updated '+new Date().toLocaleDateString('en-IN');
+}
+
+// ═══════════════════════════════════════════════════════════
+// VOLUME & MSG
+// ═══════════════════════════════════════════════════════════
+async function loadVolume() {
+  chartDefaults();
+  const [summary,offtake,generation,ld,psaTerm]=await Promise.all([
+    GET(`/volume/summary?projectId=${PROJECT_ID}`),
+    GET(`/volume/offtake?projectId=${PROJECT_ID}`),
+    GET(`/volume/generation?projectId=${PROJECT_ID}`),
+    GET(`/volume/ld/calculated?projectId=${PROJECT_ID}`),
+    GET(`/volume/psa-term?projectId=${PROJECT_ID}`)
+  ]);
+  STATE.volSummary=summary; STATE.volOfftake=offtake;
+  STATE.volGeneration=generation; STATE.volLD=ld; STATE.volPSATerm=psaTerm;
+
+  document.getElementById('volKPIs').innerHTML=[
+    {l:'Annual MSG',v:`${summary.annualMSG||177} MU`,s:'/year total'},
+    {l:'PSA term',v:'25 Yrs',s:'Jul 2026 → Jun 2051'},
+    {l:'YTD actual',v:summary.ytdActual||'Pre-COD',s:'Clock starts COD'},
+    {l:'Months elapsed',v:summary.monthsElapsed||0,s:'of 12 in FY'},
+    {l:'Lifetime rev',v:`₹${summary.lifetimeRev||1630} Cr`,s:'Over 25 years'}
+  ].map(k=>`<div class="kpi-card"><div class="kpi-label">${k.l}</div><div class="kpi-value">${k.v}</div><div class="kpi-sub">${k.s||''}</div></div>`).join('');
+
+  document.getElementById('psaSummaryTbl').innerHTML=[
+    ['PSA Client',summary.client||'Sanathan Textiles Limited'],
+    ['Annual MSG',(summary.annualMSG||177)+' MU/yr'],
+    ['MSG Status',summary.msgStatus||'Pre-COD'],
+    ['Months Elapsed',summary.monthsElapsed||0],
+    ['Annual Rev Budget','₹'+(summary.annualRevBudget||67)+' Cr'],
+    ['Lifetime Rev','₹'+(summary.lifetimeRev||1630)+' Cr']
+  ].map(r=>`<tr><td style="color:var(--text-muted);width:140px;font-size:11px">${r[0]}</td><td style="font-size:12px">${r[1]}</td></tr>`).join('');
+
+  document.getElementById('ldMonths').value=summary.monthsElapsed||0;
+  renderLDTable(ld);
+  renderOfftakeTable(offtake);
+
+  // F3: Generation table with inline editing
+  renderGenerationTable(generation);
+
+  document.getElementById('psaTermTbl').innerHTML=psaTerm.length
+    ? psaTerm.map(r=>`<tr>
+        <td style="font-weight:600">${r.plant}</td>
+        <td>${makeEditable(r.cod,`/volume/psa-term/${r.id}`,'cod','text','','')}</td>
+        <td>₹${r.tariff}/kWh</td>
+        <td>${makeEditable(r.yearsElapsed,`/volume/psa-term/${r.id}`,'yearsElapsed','number','','')}</td>
+        <td>${makeEditable(r.yearsRemaining,`/volume/psa-term/${r.id}`,'yearsRemaining','number','','')}</td>
+        <td>${pBar(r.termPct)}</td>
+        <td>${makeEditable(r.cumMSGCommitted,`/volume/psa-term/${r.id}`,'cumMSGCommitted','number','','')}</td>
+        <td>${makeEditable(r.cumActualGen,`/volume/psa-term/${r.id}`,'cumActualGen','number','','')}</td>
+        <td style="font-size:11px;color:var(--text-muted)">${r.notes||'—'}</td>
+      </tr>`).join('')
+    : `<tr><td colspan="9">${emptyState('No PSA term data')}</td></tr>`;
+
+  await refreshVolCharts();
+}
+
+// F3: Generation table with inline edits per month column
+function renderGenerationTable(generation) {
+  const months=['jul','aug','sep','oct','nov','dec','jan','feb','mar'];
+  const mLabels=['Jul','Aug','Sep','Oct','Nov','Dec','Jan','Feb','Mar'];
+  const tbl=document.getElementById('genTbl');
+  if(!tbl) return;
+  if(!generation.length){tbl.innerHTML=`<tr><td colspan="${months.length+3}">${emptyState('No generation data')}</td></tr>`;return;}
+  tbl.innerHTML=generation.map(r=>`
+    <tr>
+      <td style="font-weight:600;font-size:11px;max-width:150px">${r.plant}</td>
+      <td>${r.annualGuarantee}</td>
+      ${months.map(m=>`<td>${makeEditable(r[m]??'',`/volume/generation/${r.id}`,m,'number','','refreshVolCharts')}</td>`).join('')}
+      <td>${commentBtn('generation',r.id,r.plant)}</td>
+    </tr>`).join('');
+}
+
+function renderLDTable(ld){
+  document.getElementById('ldAutoTbl').innerHTML=(ld||[]).length
+    ? (ld||[]).map((r,i)=>`
+        <tr class="${r.breach?'ld-highlight':''}">
+          <td style="font-weight:600">${r.plant}</td><td>${r.annualMSG} MU</td>
+          <td><input class="editable" style="width:70px" type="number" value="${r.ytdActual||0}"
+            onchange="updateLDActual(${r.id},parseFloat(this.value))"></td>
+          <td style="color:var(--text-muted)">${r.proRatedMSG||0} MU</td>
+          <td style="color:${(r.ytdShortfall||0)>0?'var(--red)':'var(--green)'};font-weight:600">${r.ytdShortfall||0} MU</td>
+          <td>₹${r.ldRate}/kWh</td>
+          <td style="color:${(r.grossLD||0)>0?'var(--red)':'var(--text-secondary)'}">₹${r.grossLD||0} Cr</td>
+          <td><span class="badge ${r.breach?'badge-critical':'badge-completed'}">${r.ldStatus||'Pre-COD'}</span></td>
+        </tr>`).join('')
+    : `<tr><td colspan="8">${emptyState('No LD data available')}</td></tr>`;
+}
+
+async function updateLDActual(id,val){
+  try{
+    await PUT(`/volume/ld/${id}`,{ytdActual:val});
+    const ld=await GET(`/volume/ld/calculated?projectId=${PROJECT_ID}`);
+    STATE.volLD=ld;renderLDTable(ld);toast('LD updated ✓');
+  }catch(e){toast('Save failed: '+e.message,'err');}
+}
+
+async function calcAndSaveLD(){
+  const months=parseInt(document.getElementById('ldMonths').value)||0;
+  try{
+    await PUT('/volume/summary',{monthsElapsed:months});
+    const ld=await GET(`/volume/ld/calculated?projectId=${PROJECT_ID}`);
+    STATE.volLD=ld;renderLDTable(ld);toast('LD calculated & saved ✓');
+  }catch(e){toast('Error: '+e.message,'err');}
+}
+
+// F17: paginated offtake table
+function renderOfftakeTable(offtake){
+  const data=offtake||STATE.volOfftake||[];
+  if(!data.length){document.getElementById('offtakeTbl').innerHTML=`<tr><td colspan="5">${emptyState('No offtake data','Run migration to seed data')}</td></tr>`;return;}
+  const {sliced,cur,pages,total}=paginate(data,'offtakeTbl');
+  document.getElementById('offtakeTbl').innerHTML=sliced.map((r,i)=>{
+    const globalIdx=data.indexOf(r);
+    const prev=data[globalIdx-1];
+    const deg=prev?(((prev.expectedEnergy-r.expectedEnergy)/prev.expectedEnergy)*100).toFixed(2)+'%':'—';
+    return `<tr>
+      <td style="color:var(--brand);font-family:var(--mono)">${r.year}</td>
+      <td>${makeEditable(r.expectedEnergy,`/volume/offtake/${r.id}`,'expectedEnergy','number','','refreshVolCharts')}</td>
+      <td>${makeEditable(r.minOfftake,`/volume/offtake/${r.id}`,'minOfftake','number','','refreshVolCharts')}</td>
+      <td style="color:var(--text-muted)">${deg}</td>
+      <td><button class="btn btn-sm btn-danger" onclick="deleteOfftakeRow(${r.id})">✕</button></td>
+    </tr>`;
+  }).join('');
+  // Append pagination below table
+  const tbl=document.getElementById('offtakeTbl');
+  const par=tbl.closest('.card');
+  let pg=par.querySelector('.pagination');
+  if(pg)pg.remove();
+  if(pages>1)par.insertAdjacentHTML('beforeend',renderPagination('offtakeTbl',pages,cur,total));
+}
+
+async function deleteOfftakeRow(id){
+  if(!confirm('Delete this year?'))return;
+  try{
+    await DELETE(`/volume/offtake/${id}`);
+    const offtake=await GET(`/volume/offtake?projectId=${PROJECT_ID}`);
+    STATE.volOfftake=offtake;renderOfftakeTable(offtake);refreshVolCharts();toast('Row deleted');
+  }catch(e){toast('Error: '+e.message,'err');}
+}
+
+function addOfftakeRow(){
+  const nextYear=(STATE.volOfftake||[]).length+1;
+  openModal('Add year',[
+    {key:'year',label:'Year',type:'number',default:nextYear},
+    {key:'expectedEnergy',label:'Expected energy (MU)',type:'number',default:'180'},
+    {key:'minOfftake',label:'Min offtake MSG (MU)',type:'number',default:'162'}
+  ],async v=>{
+    try{
+      await POST('/volume/offtake',{projectId:PROJECT_ID,...v});
+      const offtake=await GET(`/volume/offtake?projectId=${PROJECT_ID}`);
+      STATE.volOfftake=offtake;renderOfftakeTable(offtake);refreshVolCharts();toast('Year added ✓');
+    }catch(e){toast('Error: '+e.message,'err');}
+  });
+}
+
+async function refreshVolCharts(){
+  chartDefaults();
+  try{
+    const data=await GET(`/volume/generation/chart-data?projectId=${PROJECT_ID}`);
+    dC('chartVol');
+    document.getElementById('volLeg').innerHTML=data.datasets.map(d=>
+      `<div class="legend-item"><div class="legend-dot" style="background:${d.borderColor};${d.borderDash?.length?'opacity:.6':''}"></div>${d.label.substring(0,30)}</div>`
+    ).join('');
+    charts['chartVol']=new Chart(document.getElementById('chartVol').getContext('2d'),{
+      type:'line',data:{labels:data.labels,datasets:data.datasets},
+      options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},
+        scales:{y:{beginAtZero:true,title:{display:true,text:'MU'},grid:{color:gc()}},x:{grid:{display:false}}}}
+    });
+  }catch(e){console.error('Vol chart error:',e);}
+}
+
+// ═══════════════════════════════════════════════════════════
+// REVENUE
+// ═══════════════════════════════════════════════════════════
+async function loadRevenue(){
+  chartDefaults();
+  const [summary,monthly,waterfall,projection]=await Promise.all([
+    GET(`/revenue/summary?projectId=${PROJECT_ID}`),
+    GET(`/revenue/monthly?projectId=${PROJECT_ID}`),
+    GET(`/revenue/waterfall?projectId=${PROJECT_ID}`),
+    GET(`/revenue/projection?projectId=${PROJECT_ID}`)
+  ]);
+  STATE.revSummary=summary;STATE.revMonthly=monthly;
+  STATE.revWaterfall=waterfall;STATE.revProjection=projection;
+
+  document.getElementById('revKPIs').innerHTML=[
+    {l:'Annual budget',v:`₹${summary.annualBudget||67} Cr`,s:'FY 2026-27'},
+    {l:'YTD revenue',v:`₹${summary.totalYTDRevenue||0} Cr`,s:'Actual'},
+    {l:'Billed',v:`₹${summary.totalBilled||0} Cr`},
+    {l:'Collected',v:`₹${summary.totalCollected||0} Cr`},
+    {l:'Outstanding',v:`₹${summary.totalOutstanding||0} Cr`,s:'Receivables'},
+    {l:'Collection eff.',v:`${summary.collectionEfficiency||0}%`},
+    {l:'Lifetime PSA',v:`₹${summary.lifetimeRev||1630} Cr`},
+    {l:'NPV @ 8%',v:`₹${summary.npv8||446} Cr`}
+  ].map(k=>`<div class="kpi-card"><div class="kpi-label">${k.l}</div><div class="kpi-value">${k.v}</div><div class="kpi-sub">${k.s||''}</div></div>`).join('');
+
+  renderRevTable(monthly);
+  renderWFTable(waterfall);
+  await refreshRevCharts();
+}
+
+// F17: paginated revenue table
+function renderRevTable(monthly){
+  const data=monthly||STATE.revMonthly||[];
+  const months=['jul','aug','sep','oct','nov','dec','jan','feb','mar'];
+  if(!data.length){document.getElementById('revTbl').innerHTML=`<tr><td colspan="17">${emptyState('No revenue data','Add a plant row to begin')}</td></tr>`;return;}
+  const {sliced,cur,pages,total}=paginate(data,'revTbl');
+  document.getElementById('revTbl').innerHTML=sliced.map(r=>`
+    <tr>
+      <td style="font-weight:600">${r.plant}</td><td>${r.state}</td><td>₹${r.tariff}</td>
+      ${months.map(m=>`<td>${makeEditable(r[m]||0,`/revenue/monthly/${r.id}`,m,'number','','refreshRevCharts')}</td>`).join('')}
+      <td style="font-weight:600">${r.ytdRevenue||0}</td>
+      <td>${r.billed||0}</td>
+      <td>${makeEditable(r.collected,`/revenue/monthly/${r.id}`,'collected','number','','refreshRevCharts')}</td>
+      <td style="color:${(r.outstanding||0)>0?'var(--red)':'var(--green)'}">${r.outstanding||0}</td>
+      <td>
+        ${commentBtn('revenue',r.id,r.plant)}
+        <button class="btn btn-sm btn-danger" onclick="deleteRevRow(${r.id})">✕</button>
+      </td>
+    </tr>`).join('');
+  const par=document.getElementById('revTbl').closest('.card');
+  let pg=par.querySelector('.pagination'); if(pg)pg.remove();
+  if(pages>1)par.insertAdjacentHTML('beforeend',renderPagination('revTbl',pages,cur,total));
+}
+
+async function deleteRevRow(id){
+  if(!confirm('Delete?'))return;
+  try{await DELETE(`/revenue/monthly/${id}`);const m=await GET(`/revenue/monthly?projectId=${PROJECT_ID}`);STATE.revMonthly=m;renderRevTable(m);refreshRevCharts();toast('Row deleted');}
+  catch(e){toast('Error: '+e.message,'err');}
+}
+function addRevRow(){
+  openModal('Add plant revenue row',[
+    {key:'plant',label:'Plant name',default:'PLT-0X'},
+    {key:'state',label:'State',default:'Rajasthan'},
+    {key:'tariff',label:'Tariff (₹/kWh)',type:'number',default:'3.81'}
+  ],async v=>{
+    try{await POST('/revenue/monthly',{projectId:PROJECT_ID,...v});const m=await GET(`/revenue/monthly?projectId=${PROJECT_ID}`);STATE.revMonthly=m;renderRevTable(m);refreshRevCharts();toast('Row added ✓');}
+    catch(e){toast('Error: '+e.message,'err');}
+  });
+}
+
+function renderWFTable(waterfall){
+  document.getElementById('wfTbl').innerHTML=(waterfall||[]).length
+    ? (waterfall||[]).map(r=>`
+        <tr>
+          <td>${makeEditable(r.stage,`/revenue/waterfall/${r.id}`,'stage','text','','refreshRevCharts')}</td>
+          <td>${makeEditable(r.value,`/revenue/waterfall/${r.id}`,'value','number','','refreshRevCharts')}</td>
+          <td><button class="btn btn-sm btn-danger" onclick="deleteWFRow(${r.id})">✕</button></td>
+        </tr>`).join('')
+    : `<tr><td colspan="3">${emptyState('No waterfall stages','Add a stage to begin')}</td></tr>`;
+}
+async function deleteWFRow(id){
+  if(!confirm('Delete?'))return;
+  try{await DELETE(`/revenue/waterfall/${id}`);const wf=await GET(`/revenue/waterfall?projectId=${PROJECT_ID}`);STATE.revWaterfall=wf;renderWFTable(wf);refreshRevCharts();toast('Stage deleted');}
+  catch(e){toast('Error: '+e.message,'err');}
+}
+function addWFRow(){
+  openModal('Add waterfall stage',[{key:'stage',label:'Stage name',default:'New stage'},{key:'value',label:'Value (₹ Cr)',type:'number',default:'0'}],
+    async v=>{try{await POST('/revenue/waterfall',{projectId:PROJECT_ID,...v});const wf=await GET(`/revenue/waterfall?projectId=${PROJECT_ID}`);STATE.revWaterfall=wf;renderWFTable(wf);refreshRevCharts();toast('Stage added ✓');}catch(e){toast('Error: '+e.message,'err');}});
+}
+
+async function refreshRevCharts(){
+  chartDefaults();
+  try{
+    const [projData,wfData,monthlyData]=await Promise.all([
+      GET(`/revenue/projection/chart-data?projectId=${PROJECT_ID}`),
+      GET(`/revenue/waterfall/chart-data?projectId=${PROJECT_ID}`),
+      GET(`/revenue/monthly/chart-data?projectId=${PROJECT_ID}`)   // F2: monthly revenue chart
+    ]);
+    dC('chartRevProj');
+    const rvc=['rgba(72,161,199,0.8)','rgba(63,185,80,0.8)','rgba(210,153,34,0.8)'];
+    document.getElementById('revProjLeg').innerHTML=['PLT-01 Karnataka','PLT-02 Maharashtra','PLT-03 Rajasthan'].map((l,i)=>
+      `<div class="legend-item"><div class="legend-dot" style="background:${rvc[i]}"></div>${l}</div>`).join('');
+    charts['chartRevProj']=new Chart(document.getElementById('chartRevProj').getContext('2d'),{
+      type:'bar',data:{labels:projData.labels,datasets:projData.datasets},
+      options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},
+        scales:{x:{stacked:true,grid:{display:false}},y:{stacked:true,ticks:{callback:v=>'₹'+v},grid:{color:gc()}}}}
+    });
+    dC('chartWF');
+    charts['chartWF']=new Chart(document.getElementById('chartWF').getContext('2d'),{
+      type:'bar',data:{labels:wfData.labels,datasets:[{label:'₹ Cr',data:wfData.values,backgroundColor:wfData.colors,borderRadius:4,borderSkipped:false}]},
+      options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},
+        scales:{x:{ticks:{autoSkip:false,maxRotation:30},grid:{display:false}},y:{ticks:{callback:v=>'₹'+v},grid:{color:gc()}}}}
+    });
+    // F2: Monthly revenue line chart
+    dC('chartRevMonthly');
+    const mcEl=document.getElementById('chartRevMonthly');
+    if(mcEl&&monthlyData.datasets?.length){
+      charts['chartRevMonthly']=new Chart(mcEl.getContext('2d'),{
+        type:'line',data:{labels:monthlyData.labels,datasets:monthlyData.datasets},
+        options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:true,position:'bottom',labels:{boxWidth:10,font:{size:10}}}},
+          scales:{y:{beginAtZero:true,ticks:{callback:v=>'₹'+v+' Cr'},grid:{color:gc()}},x:{grid:{display:false}}}}
+      });
+    }
+  }catch(e){console.error('Rev chart error:',e);}
+}
+
+// ═══════════════════════════════════════════════════════════
+// RISKS
+// ═══════════════════════════════════════════════════════════
+async function loadRisks(){
+  chartDefaults();
+  const risks=await GET(`/risks?projectId=${PROJECT_ID}`);
+  STATE.risks=risks; renderRiskTable(risks); refreshRiskCharts(); refreshNavBadges();
+}
+
+// F17: paginated risk table
+function renderRiskTable(risks){
+  const data=risks||STATE.risks||[];
+  if(!data.length){document.getElementById('riskTbl').innerHTML=`<tr><td colspan="12">${emptyState('No risks registered','Click + Risk to add one','addRiskRow()')}</td></tr>`;return;}
+  const {sliced,cur,pages,total}=paginate(data,'riskTbl');
+  document.getElementById('riskTbl').innerHTML=sliced.map(r=>`
+    <tr>
+      <td style="font-weight:600;color:var(--brand);font-family:var(--mono)">${r.riskId}</td>
+      <td>${makeEditable(r.category,`/risks/${r.id}`,'category','text','','')}</td>
+      <td>${makeEditable(r.severity,`/risks/${r.id}`,'severity','select',['Critical','High','Medium','Low'],'refreshRiskCharts')}</td>
+      <td>${ragDot('risk',r.score)}</td>
+      <td>${makeEditable(r.likelihood??'',`/risks/${r.id}`,'likelihood','number','','refreshRiskCharts')}</td>
+      <td>${makeEditable(r.impact??'',`/risks/${r.id}`,'impact','number','','refreshRiskCharts')}</td>
+      <td style="font-weight:600">${r.score??'—'}</td>
+      <td class="trend-${r.trend==='Worsening'?'down':r.trend==='Stable'?'stable':'up'}">${r.trend||'—'}</td>
+      <td>${makeEditable(r.status,`/risks/${r.id}`,'status','select',['Open','Closed','Monitoring'],'')}</td>
+      <td>${makeEditable(r.lastReviewed??'',`/risks/${r.id}`,'lastReviewed','text','','')}</td>
+      <td>${commentBtn('risks',r.riskId,r.category)}</td>
+      <td><button class="btn btn-sm btn-danger" onclick="deleteRisk(${r.id})">✕</button></td>
+    </tr>`).join('');
+  const par=document.getElementById('riskTbl').closest('.card');
+  let pg=par.querySelector('.pagination');if(pg)pg.remove();
+  if(pages>1)par.insertAdjacentHTML('beforeend',renderPagination('riskTbl',pages,cur,total));
+}
+
+async function deleteRisk(id){if(!confirm('Delete?'))return;try{await DELETE(`/risks/${id}`);const r=await GET(`/risks?projectId=${PROJECT_ID}`);STATE.risks=r;renderRiskTable(r);refreshRiskCharts();refreshNavBadges();toast('Risk deleted');}catch(e){toast('Error: '+e.message,'err');}}
+function addRiskRow(){
+  openModal('Add risk',[
+    {key:'riskId',label:'Risk ID',default:`CR-0${(STATE.risks||[]).length+1}`},
+    {key:'category',label:'Category',default:'New Risk'},
+    {key:'severity',label:'Severity',type:'select',opts:['Critical','High','Medium','Low']},
+    {key:'likelihood',label:'Likelihood (1-10)',type:'number',default:'5'},
+    {key:'impact',label:'Impact (1-10)',type:'number',default:'5'},
+    {key:'description',label:'Description',default:''}
+  ],async v=>{try{await POST('/risks',{projectId:PROJECT_ID,...v});const r=await GET(`/risks?projectId=${PROJECT_ID}`);STATE.risks=r;renderRiskTable(r);refreshRiskCharts();refreshNavBadges();toast('Risk added ✓');}catch(e){toast('Error: '+e.message,'err');}});
+}
+
+async function refreshRiskCharts(){
+  chartDefaults();
+  try{
+    const data=await GET(`/risks/chart-data?projectId=${PROJECT_ID}`);
+    dC('chartRisk');dC('chartRadar');
+    const sc={Critical:'rgba(248,81,73,0.7)',High:'rgba(210,153,34,0.7)',Medium:'rgba(72,161,199,0.7)',Low:'rgba(63,185,80,0.7)'};
+    charts['chartRisk']=new Chart(document.getElementById('chartRisk').getContext('2d'),{
+      type:'bubble',
+      data:{datasets:data.bubbleData.map(d=>({label:d.id,data:[{x:d.x,y:d.y,r:d.r}],backgroundColor:sc[d.severity]||'rgba(139,148,158,0.5)'}))},
+      options:{responsive:true,maintainAspectRatio:false,
+        plugins:{legend:{display:false},tooltip:{callbacks:{label:ctx=>`${data.bubbleData[ctx.datasetIndex]?.id}: ${data.bubbleData[ctx.datasetIndex]?.label} (Score: ${data.bubbleData[ctx.datasetIndex]?.score})`}}},
+        scales:{x:{min:0,max:10,title:{display:true,text:'Likelihood'},grid:{color:gc()}},y:{min:0,max:10,title:{display:true,text:'Impact'},grid:{color:gc()}}},
+        layout:{padding:20}}
+    });
+    charts['chartRadar']=new Chart(document.getElementById('chartRadar').getContext('2d'),{
+      type:'radar',
+      data:{labels:data.radarData.map(d=>d.label.length>14?d.label.substring(0,14)+'…':d.label),
+        datasets:[{label:'Risk Score',data:data.radarData.map(d=>d.score),backgroundColor:'rgba(72,161,199,0.2)',borderColor:'#48a1c7',pointBackgroundColor:'#48a1c7'}]},
+      options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},
+        scales:{r:{min:0,max:10,ticks:{stepSize:2},grid:{color:gc()},pointLabels:{font:{size:10}}}}}
+    });
+  }catch(e){console.error('Risk chart error:',e);}
+}
+
+// ═══════════════════════════════════════════════════════════
+// COMPLIANCE
+// ═══════════════════════════════════════════════════════════
+async function loadCompliance(){
+  chartDefaults();
+  const rows=await GET(`/compliance?projectId=${PROJECT_ID}`);
+  STATE.compliance=rows;
+  const compliant=rows.filter(r=>r.status==='Compliant'||r.status==='Continuous').length;
+  const atRisk=rows.filter(r=>r.status==='At Risk').length;
+  const pending=rows.filter(r=>r.status==='Pending').length;
+  const avg=rows.length?(rows.reduce((s,r)=>s+r.score,0)/rows.length).toFixed(1):0;
+  document.getElementById('compKPIs').innerHTML=[
+    {l:'Compliant',v:compliant,c:'var(--green)'},{l:'At Risk',v:atRisk,c:'var(--red)'},
+    {l:'Pending',v:pending,c:'var(--amber)'},{l:'Avg score',v:avg+'%',c:'var(--brand)'}
+  ].map(k=>`<div class="kpi-card"><div class="kpi-label">${k.l}</div><div class="kpi-value" style="color:${k.c}">${k.v}</div></div>`).join('');
+  renderCompTable(rows); refreshCompCharts(); refreshNavBadges();
+}
+
+function renderCompTable(rows){
+  const data=rows||STATE.compliance||[];
+  if(!data.length){document.getElementById('compTbl').innerHTML=`<tr><td colspan="11">${emptyState('No compliance items','Click + Item to add','addCompRow()')}</td></tr>`;return;}
+  const {sliced,cur,pages,total}=paginate(data,'compTbl');
+  document.getElementById('compTbl').innerHTML=sliced.map(r=>`
+    <tr>
+      <td style="font-weight:600;color:var(--brand);font-family:var(--mono)">${r.refId}</td>
+      <td style="font-size:11px;max-width:120px">${r.area}</td>
+      <td>${makeEditable(r.status,`/compliance/${r.id}`,'status','select',['Compliant','At Risk','Pending','Continuous'],'refreshCompCharts')}</td>
+      <td>${ragDot('compliance',r.score)}</td>
+      <td>${makeEditable(r.score,`/compliance/${r.id}`,'score','number','','refreshCompCharts')}%</td>
+      <td>${pBar(r.score,pctClr(r.score))}</td>
+      <td>${makeEditable(r.lastAudit??'',`/compliance/${r.id}`,'lastAudit','text','','')}</td>
+      <td>${makeEditable(r.nextAudit??'',`/compliance/${r.id}`,'nextAudit','text','','')}</td>
+      <td>${makeEditable(r.responsible??'',`/compliance/${r.id}`,'responsible','text','','')}</td>
+      <td style="max-width:160px"><input class="editable" style="width:100%" value="${r.action||''}" id="ca_${r.id}"
+        data-prev="${r.action||''}"
+        onblur="debouncedSave('ca_${r.id}','/compliance/${r.id}','action','')"
+        onkeydown="if(event.key==='Enter')this.blur()"></td>
+      <td>${commentBtn('compliance',r.refId,r.area)}</td>
+      <td><button class="btn btn-sm btn-danger" onclick="deleteComp(${r.id})">✕</button></td>
+    </tr>`).join('');
+  const par=document.getElementById('compTbl').closest('.card');
+  let pg=par.querySelector('.pagination');if(pg)pg.remove();
+  if(pages>1)par.insertAdjacentHTML('beforeend',renderPagination('compTbl',pages,cur,total));
+}
+
+async function deleteComp(id){if(!confirm('Delete?'))return;try{await DELETE(`/compliance/${id}`);const r=await GET(`/compliance?projectId=${PROJECT_ID}`);STATE.compliance=r;renderCompTable(r);refreshCompCharts();refreshNavBadges();toast('Item deleted');}catch(e){toast('Error: '+e.message,'err');}}
+function addCompRow(){
+  openModal('Add compliance item',[
+    {key:'refId',label:'Ref ID',default:`RC-${(STATE.compliance||[]).length+20}`},
+    {key:'area',label:'Regulatory area',default:'New regulation'},
+    {key:'status',label:'Status',type:'select',opts:['Compliant','At Risk','Pending','Continuous']},
+    {key:'score',label:'Score (%)',type:'number',default:'80'},
+    {key:'responsible',label:'Responsible',default:'Legal'},
+    {key:'nextAudit',label:'Next audit',default:'—'}
+  ],async v=>{try{await POST('/compliance',{projectId:PROJECT_ID,...v});const r=await GET(`/compliance?projectId=${PROJECT_ID}`);STATE.compliance=r;renderCompTable(r);refreshCompCharts();refreshNavBadges();toast('Item added ✓');}catch(e){toast('Error: '+e.message,'err');}});
+}
+
+async function refreshCompCharts(){
+  chartDefaults();
+  try{
+    const data=await GET(`/compliance/chart-data?projectId=${PROJECT_ID}`);
+    dC('chartComp');
+    charts['chartComp']=new Chart(document.getElementById('chartComp').getContext('2d'),{
+      type:'bar',data:{labels:data.labels,datasets:[{label:'Score (%)',data:data.scores,
+        backgroundColor:data.scores.map(s=>s>=90?'rgba(63,185,80,0.7)':s>=70?'rgba(72,161,199,0.7)':'rgba(248,81,73,0.7)'),
+        borderRadius:4,borderSkipped:false}]},
+      options:{indexAxis:'y',responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},
+        scales:{x:{min:0,max:100,ticks:{callback:v=>v+'%'},grid:{color:gc()}},y:{grid:{display:false}}}}
+    });
+  }catch(e){console.error('Comp chart error:',e);}
+}
+
+// ═══════════════════════════════════════════════════════════
+// POST COD
+// ═══════════════════════════════════════════════════════════
+async function loadPostCOD(){
+  const [rows,summary]=await Promise.all([GET(`/postcod?projectId=${PROJECT_ID}`),GET(`/postcod/summary?projectId=${PROJECT_ID}`)]);
+  STATE.postcod=rows;
+  document.getElementById('postKPIs').innerHTML=[
+    {l:'Total items',v:summary.total||0},{l:'Critical',v:summary.critical||0,c:'var(--red)'},
+    {l:'At Risk',v:summary.atRisk||0,c:'var(--amber)'},{l:'In Progress',v:summary.inProgress||0,c:'var(--blue)'},
+    {l:'Completed',v:summary.completed||0,c:'var(--green)'}
+  ].map(k=>`<div class="kpi-card"><div class="kpi-label">${k.l}</div><div class="kpi-value"${k.c?` style="color:${k.c}"`:''}>${k.v}</div></div>`).join('');
+  const gantt=document.getElementById('ganttArea');
+  const ganttRows=rows.filter(r=>r.priority==='Critical'||r.priority==='High');
+  gantt.innerHTML=ganttRows.length?ganttRows.map(r=>{
+    const pct=Math.max(4,Math.min(100,parseFloat(r.pctComplete)||0));
+    const clr=r.priority==='Critical'?'var(--red)':r.priority==='High'?'var(--amber)':'var(--brand)';
+    return `<div class="gantt-row"><div class="gantt-label">${r.pcId}</div><div class="gantt-track"><div class="gantt-bar" style="width:${pct}%;background:${clr}">${pct>15?(r.category||'').substring(0,18):''}</div></div><div style="font-size:10px;color:var(--text-muted);width:80px;flex-shrink:0">${r.dueBy||'—'}</div></div>`;
+  }).join('')
+  : emptyState('No critical/high items to show on Gantt');
+  renderPostTable(rows);refreshNavBadges();
+}
+
+function renderPostTable(rows){
+  const data=rows||STATE.postcod||[];
+  if(!data.length){document.getElementById('postTbl').innerHTML=`<tr><td colspan="12">${emptyState('No Post-COD items','Click + Item to add','addPostCODRow()')}</td></tr>`;return;}
+  const {sliced,cur,pages,total}=paginate(data,'postTbl');
+  document.getElementById('postTbl').innerHTML=sliced.map(r=>`
+    <tr>
+      <td style="font-weight:600;color:var(--brand);font-family:var(--mono)">${r.pcId}</td>
+      <td style="font-size:11px">${r.category||'—'}</td>
+      <td style="font-size:11px;max-width:150px">${(r.description||'').substring(0,55)}…</td>
+      <td>${makeEditable(r.plannedDate??'',`/postcod/${r.id}`,'plannedDate','text','','')}</td>
+      <td>${makeEditable(r.actualRevised??'',`/postcod/${r.id}`,'actualRevised','text','','')}</td>
+      <td>${makeEditable(r.pctComplete??0,`/postcod/${r.id}`,'pctComplete','number','','loadPostCOD')}%</td>
+      <td>${pBar(r.pctComplete,r.priority==='Critical'?'red':r.priority==='High'?'amber':'blue')}</td>
+      <td>${makeEditable(r.status,`/postcod/${r.id}`,'status','select',['Upcoming','In Progress','At Risk','Completed'],'')}</td>
+      <td>${pBadge(r.priority)}</td>
+      <td>${makeEditable(r.responsible??'',`/postcod/${r.id}`,'responsible','text','','')}</td>
+      <td>${makeEditable(r.dueBy??'',`/postcod/${r.id}`,'dueBy','text','','')}</td>
+      <td>${commentBtn('postcod',r.pcId,r.category)}</td>
+      <td><button class="btn btn-sm btn-danger" onclick="deletePostCOD(${r.id})">✕</button></td>
+    </tr>`).join('');
+  const par=document.getElementById('postTbl').closest('.card');
+  let pg=par.querySelector('.pagination');if(pg)pg.remove();
+  if(pages>1)par.insertAdjacentHTML('beforeend',renderPagination('postTbl',pages,cur,total));
+}
+
+async function deletePostCOD(id){if(!confirm('Delete?'))return;try{await DELETE(`/postcod/${id}`);await loadPostCOD();toast('Item deleted');}catch(e){toast('Error: '+e.message,'err');}}
+function addPostCODRow(){
+  openModal('Add Post-COD item',[
+    {key:'pcId',label:'ID',default:`PC-0${(STATE.postcod||[]).length+1}`},
+    {key:'category',label:'Category',default:'New item'},
+    {key:'description',label:'Description',default:''},
+    {key:'priority',label:'Priority',type:'select',opts:['Critical','High','Medium','Low']},
+    {key:'dueBy',label:'Due by',default:'TBD'}
+  ],async v=>{try{await POST('/postcod',{projectId:PROJECT_ID,...v});await loadPostCOD();toast('Item added ✓');}catch(e){toast('Error: '+e.message,'err');}});
+}
+
+// ═══════════════════════════════════════════════════════════
+// MILESTONES
+// ═══════════════════════════════════════════════════════════
+async function loadMilestones(){
+  chartDefaults();
+  const rows=await GET(`/milestones?projectId=${PROJECT_ID}`);
+  STATE.milestones=rows;
+  const completed=rows.filter(r=>r.status==='Completed').length;
+  const inProgress=rows.filter(r=>r.status==='In Progress').length;
+  const atRisk=rows.filter(r=>r.status==='At Risk').length;
+  const critical=rows.filter(r=>r.priority==='Critical').length;
+  document.getElementById('msKPIs').innerHTML=[
+    {l:'Total',v:rows.length},{l:'Completed',v:completed,c:'var(--green)'},
+    {l:'In Progress',v:inProgress,c:'var(--blue)'},{l:'At Risk',v:atRisk,c:'var(--red)'},
+    {l:'Critical',v:critical,c:'var(--red)'}
+  ].map(k=>`<div class="kpi-card"><div class="kpi-label">${k.l}</div><div class="kpi-value"${k.c?` style="color:${k.c}"`:''}>${k.v}</div></div>`).join('');
+  renderMSTable(rows);refreshMSCharts();refreshNavBadges();
+}
+
+function renderMSTable(rows){
+  const data=rows||STATE.milestones||[];
+  if(!data.length){document.getElementById('msTbl').innerHTML=`<tr><td colspan="11">${emptyState('No milestones yet','Click + Milestone to add','addMSRow()')}</td></tr>`;return;}
+  const {sliced,cur,pages,total}=paginate(data,'msTbl');
+  document.getElementById('msTbl').innerHTML=sliced.map(r=>`
+    <tr>
+      <td style="font-weight:600;color:var(--brand);font-family:var(--mono)">${r.msId}</td>
+      <td style="font-size:11px">${r.category||'—'}</td>
+      <td style="font-size:11px;max-width:150px">${(r.description||'').substring(0,55)}…</td>
+      <td>${makeEditable(r.plannedDate??'',`/milestones/${r.id}`,'plannedDate','text','','')}</td>
+      <td>${makeEditable(r.pctComplete??0,`/milestones/${r.id}`,'pctComplete','number','','refreshMSCharts')}%</td>
+      <td>${pBar(r.pctComplete,r.status==='Completed'?'green':r.status==='At Risk'?'red':'blue')}</td>
+      <td>${makeEditable(r.status,`/milestones/${r.id}`,'status','select',['Upcoming','In Progress','At Risk','Completed'],'refreshMSCharts')}</td>
+      <td>${pBadge(r.priority)}</td>
+      <td>${makeEditable(r.responsible??'',`/milestones/${r.id}`,'responsible','text','','')}</td>
+      <td>${makeEditable(r.dueBy??'',`/milestones/${r.id}`,'dueBy','text','','')}</td>
+      <td>${commentBtn('milestones',r.msId,r.category)}</td>
+      <td><button class="btn btn-sm btn-danger" onclick="deleteMS(${r.id})">✕</button></td>
+    </tr>`).join('');
+  const par=document.getElementById('msTbl').closest('.card');
+  let pg=par.querySelector('.pagination');if(pg)pg.remove();
+  if(pages>1)par.insertAdjacentHTML('beforeend',renderPagination('msTbl',pages,cur,total));
+}
+
+async function deleteMS(id){if(!confirm('Delete?'))return;try{await DELETE(`/milestones/${id}`);await loadMilestones();toast('Milestone deleted');}catch(e){toast('Error: '+e.message,'err');}}
+function addMSRow(){
+  openModal('Add milestone',[
+    {key:'msId',label:'MS ID',default:`MS-${(STATE.milestones||[]).length+1}`},
+    {key:'category',label:'Category',default:'New milestone'},
+    {key:'description',label:'Description',default:''},
+    {key:'priority',label:'Priority',type:'select',opts:['Critical','High','Medium','Low']},
+    {key:'dueBy',label:'Due by',default:'TBD'}
+  ],async v=>{try{await POST('/milestones',{projectId:PROJECT_ID,...v});await loadMilestones();toast('Milestone added ✓');}catch(e){toast('Error: '+e.message,'err');}});
+}
+
+async function refreshMSCharts(){
+  chartDefaults();
+  try{
+    const data=await GET(`/milestones/chart-data?projectId=${PROJECT_ID}`);
+    dC('chartMS');
+    charts['chartMS']=new Chart(document.getElementById('chartMS').getContext('2d'),{
+      type:'bar',data:{labels:data.labels,datasets:[{label:'% Complete',data:data.pctComplete,backgroundColor:data.colors,borderRadius:3,borderSkipped:false}]},
+      options:{indexAxis:'y',responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},
+        scales:{x:{min:0,max:100,ticks:{callback:v=>v+'%'},grid:{color:gc()}},y:{grid:{display:false},ticks:{font:{size:10,family:'DM Mono'}}}}}
+    });
+  }catch(e){console.error('MS chart error:',e);}
+}
+
+// ═══════════════════════════════════════════════════════════
+// ALERTS
+// ═══════════════════════════════════════════════════════════
+async function loadAlerts(){
+  const [rows,summary]=await Promise.all([GET(`/alerts?projectId=${PROJECT_ID}`),GET(`/alerts/summary?projectId=${PROJECT_ID}`)]);
+  STATE.alerts=rows;
+  document.getElementById('alertKPIs').innerHTML=[
+    {l:'Critical open',v:summary.critical||0,c:'var(--red)'},{l:'High open',v:summary.high||0,c:'var(--amber)'},
+    {l:'Low open',v:summary.low||0,c:'var(--green)'},{l:'Total open',v:summary.totalOpen||0}
+  ].map(k=>`<div class="kpi-card"><div class="kpi-label">${k.l}</div><div class="kpi-value"${k.c?` style="color:${k.c}"`:''}>${k.v}</div></div>`).join('');
+
+  document.getElementById('alertsList').innerHTML=rows.length
+    ? rows.map(a=>`
+        <div class="alert-card alert-${(a.priority||'').toLowerCase()}">
+          <div class="alert-header">
+            <span class="badge badge-${(a.priority||'').toLowerCase()}">${a.priority||'—'}</span>
+            <strong style="font-size:13px">${a.alertId}</strong>
+            <span style="font-size:12px;color:var(--text-secondary)">${a.category||'—'}</span>
+            <div style="margin-left:auto;display:flex;align-items:center;gap:6px">
+              ${makeEditable(a.status,`/alerts/${a.id}`,'status','select',['Open','Resolved','Escalated','In Review'],'loadAlerts')}
+              ${commentBtn('alerts',a.alertId,a.category)}
+            </div>
+          </div>
+          <div class="alert-desc">${a.description||'—'}</div>
+          <div class="alert-meta">
+            <div><div class="alert-meta-label">Action required</div>
+              <input class="editable" style="width:100%" value="${a.actionRequired||''}" id="ar_${a.id}"
+                data-prev="${a.actionRequired||''}"
+                onblur="debouncedSave('ar_${a.id}','/alerts/${a.id}','actionRequired','')"
+                onkeydown="if(event.key==='Enter')this.blur()"></div>
+            <div><div class="alert-meta-label">Owner</div>${makeEditable(a.owner??'',`/alerts/${a.id}`,'owner','text','','')}</div>
+            <div><div class="alert-meta-label">Target date</div>${makeEditable(a.targetDate??'',`/alerts/${a.id}`,'targetDate','text','','')}</div>
+            <div><div class="alert-meta-label">Escalation</div>${makeEditable(a.escalation,`/alerts/${a.id}`,'escalation','select',['L1','L2','L3'],'')}</div>
+            <div><div class="alert-meta-label">Linked MS</div><span style="font-size:11px;color:var(--brand);font-family:var(--mono)">${a.linkedMS||'—'}</span></div>
+            <div><div class="alert-meta-label">PSA ref</div><span style="font-size:11px;color:var(--text-muted)">${a.psaRef||'—'}</span></div>
+          </div>
+        </div>`).join('')
+    : emptyState('No alerts found','All clear ✓');
+
+  document.getElementById('escTable').innerHTML=[
+    {level:'L1 — Project Level',cls:'esc-l1',team:'PM · O&M Mgr · Regulatory Mgr',sla:'All issues within 24 hrs',actions:'SLDC filings · O&M action · SERC filings'},
+    {level:'L2 — Finance & Legal',cls:'esc-l2',team:'CFO · Legal · Lender RM',sla:'Critical 24 hrs · High 48 hrs',actions:'LC invocation · PSA demand notice · Lender notification'},
+    {level:'L3 — Board & Regulator',cls:'esc-l3',team:'Board Risk Comm. · CERC/SERC · APTEL',sla:'Unresolved Critical within 7 days',actions:'Board resolution · CERC petition · Arbitration filing'}
+  ].map(e=>`<div class="esc-row"><div class="esc-level ${e.cls}">${e.level}</div><div style="color:var(--text-secondary)">${e.team}</div><div style="color:var(--text-muted)">${e.sla}</div><div style="color:var(--text-muted)">${e.actions}</div></div>`).join('');
+
+  refreshNavBadges();
+}
+
+// ═══════════════════════════════════════════════════════════
+// INIT
+// ═══════════════════════════════════════════════════════════
+async function init(){
+  const theme=localStorage.getItem('psa_theme')||'dark';
+  document.documentElement.setAttribute('data-theme',theme);
+  chartDefaults();
+  initAuth(); // F11: stores author name from username
+  try{
+    setLoading(true);
+    const [projects,plants]=await Promise.all([GET('/projects'),GET(`/plants?projectId=${PROJECT_ID}`)]);
+    STATE.projects=projects; STATE.plants=plants;
+    buildProjectSwitcher(projects); // F9
+    buildSheetNav();
+    await showPage('dashboard');
+  }catch(e){
+    if(e.message==='Unauthorized'){sessionStorage.removeItem('psa_auth');toast('Wrong credentials — refresh page','err',5000);return;}
+    toast('Could not connect to server. Is it running? '+e.message,'err',5000);
+    document.getElementById('topbarTitle').textContent='Connection error';
+    document.getElementById('topbarSub').textContent='Run: npm start  then refresh this page';
+  }finally{setLoading(false);}
+}
+
+init();
+</script>
+</body>
+</html>
